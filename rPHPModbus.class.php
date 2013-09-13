@@ -52,80 +52,90 @@ class rPHPModbus {
 
 		$result = socket_connect($this->_socket, $this->_host, $this->_port);
 		if ($result === false) {
-			throw new Exception( "[!!] socket_connect() failed in Connect().\nReason: ($result) " . socket_strerror(socket_last_error($this->_socket)));
+			$err = socket_strerror(socket_last_error($this->_socket));
+			if($this->_debug) echo "[--] socket_connect() failed in rPHPModbus->Connect(): ($err)\n";
+			throw new Exception( "socket_connect() failed in Connect().\nReason: ($err)" );
 		} else {
-			if($this->_debug) echo "[OK] Successfully connected to host {$this->_host}\n";
+			if($this->_debug) echo "[++] Successfully connected to host {$this->_host}\n";
 		}
 	}
 	
-	public function DoModbusQuery($modbus_function_code, $data){
-
-
+	public function DoModbusQuery($modbus_unit_identifier, $modbus_function_code, $data){
+		if($this->_debug) echo "[ii] ------------- Starting new transaction -------------\n";
 		$modbus_transaction_id = $this->_GetNextTransactionId();
-	//	if($this->_debug) echo "[AA] ID={$modbus_transaction_id}\n";
-		
 		$modbus_protocol_identifier = 0;
-		$modbus_unit_identifier=1;
-
-		$payload = $this->_CreateModbusTCPPayload($modbus_transaction_id, $modbus_protocol_identifier, $modbus_unit_identifier, $modbus_function_code, $data);
-
-	//	if($this->_debug) echo "[AA] PAYLOAD={$payload}\n";
-		
+		$payload = $this->_CreateModbusTCPPacket($modbus_transaction_id, $modbus_protocol_identifier, $modbus_unit_identifier, $modbus_function_code, $data);
 		usleep($this->_waitusec);
-
-		$hexres = $this->_DoModbusPoll($payload);
-	//	if($this->_debug) echo "[AA] HEXRES={$hexres}\n";
-		
-		$res = $this->_GetHexvalueFromModbusResult($hexres);
-		if($this->_debug) echo "[AA] Result={$res}\n";
-		return $res;
+		$result_raw = $this->_DoModbusPoll($payload);
+		$result = $this->_ParseModbusResult($result_raw, $payload);
+		if($this->_debug) echo "[ii] ------------- Ending transaction -------------------\n";
+		return $result;
 	}
-	/*
-	public function DoModbusQuery($function_code, $data){
-		$id = $this->_GetNextTransactionId();
-		if($this->_debug) echo "[AA] ID={$id}\n";
-	}
-	*/
 	
 	public function Disconnect(){
 		socket_close($this->_socket);
+		if($this->_debug) echo "[++] Disconnected Socket\n";
 	}
 	
-	/*
-	private function _CreateAnalinkModbusTCPPayload($modbus_transaction_id, $modbus_function_code, $analink_function_index, $extradata="00"){
-		$modbus_protocol_identifier = 0;
-		$modbus_unit_identifier=1;
-		$payload = $this->_CreateModbusTCPPayload($modbus_transaction_id, $modbus_protocol_identifier, $modbus_unit_identifier, $modbus_function_code, "ff00{$analink_function_index}{$extradata}");
-		return $payload;
+	
+	public function DoModbusFunction_01ReadCoilStatus($slave_address, $addr_hi, $addr_lo, $points_hi, $points_lo){
+		return $this->_DoModbusFunction_Basic($slave_address, 1, $addr_hi, $addr_lo, $points_hi, $points_lo);
 	}
-	*/
-
-	private function _CreateModbusTCPPayload($transaction_id, $protocol_identifier, $unit_identifier, $modbus_function_code, $data_bytes){
-		$remaining_bytes = strlen($data_bytes/2) + 4;
+	
+	public function DoModbusFunction_02ReadInputStatus($slave_address, $addr_hi, $addr_lo, $points_hi, $points_lo){
+		return $this->_DoModbusFunction_Basic($slave_address, 2, $addr_hi, $addr_lo, $points_hi, $points_lo);
+	}
+	
+	public function DoModbusFunction_03ReadHoldingRegisters($slave_address, $addr_hi, $addr_lo, $points_hi, $points_lo){
+		return $this->_DoModbusFunction_Basic($slave_address, 3, $addr_hi, $addr_lo, $points_hi, $points_lo);
+	}
+	
+	private function _DoModbusFunction_Basic($slave_address, $function, $addr_hi, $addr_lo, $points_hi, $points_lo){
+		$payload = "{$addr_hi}{$addr_lo}{$points_hi}{$points_lo}";
+		if(strlen($payload) != 8){
+			throw new Exception("Malformed _DoModbusFunction_Basic() parm_number length, should be 8: length='".strlen($payload)."', data='{$payload}'");
+		}
+		if($this->_debug) echo "[++] Address/Points: '{$payload }'\n";
+		return $this->DoModbusQuery($slave_address, $function, $payload);
+	}
+	
+	
+	private function _CreateModbusTCPPacket($transaction_id, $protocol_identifier, $unit_identifier, $modbus_function_code, $data){
+		$remaining_bytes = strlen($data)/2 + 2;
 		
-		$hexbytecount = str_pad(dechex($remaining_bytes), 4, "0", STR_PAD_LEFT);
-		$protocol_identifier = str_pad(dechex($protocol_identifier), 4, "0", STR_PAD_LEFT);
-		$unit_identifier = str_pad(dechex($unit_identifier), 2, "0", STR_PAD_LEFT);
-		$modbus_function_code = str_pad(dechex($modbus_function_code), 2, "0", STR_PAD_LEFT);
+		$hexbytecount = self::Convert10to16($remaining_bytes,2);
+		$protocol_identifier = self::Convert10to16($protocol_identifier);
+		$unit_identifier = self::Convert10to16($unit_identifier,1);
+		$modbus_function_code = self::Convert10to16($modbus_function_code,1);
 
-
-		if($this->_debug) echo "[MB] Transaction Identifier=[{$transaction_id}] Protocol Identifier=[{$protocol_identifier}] Length Field=[{$hexbytecount}] Unit Identifier=[{$unit_identifier}] Function code=[{$modbus_function_code}] Data bytes=[{$data_bytes}]\n";
+		if($this->_debug) echo "[++] Creating Modbus Packet:\n";
+		if($this->_debug) echo "   header: TransactionIdentifier=[{$transaction_id}] ProtocolIdentifier=[{$protocol_identifier}] RemainingBytes=[{$hexbytecount}]\n";
+		if($this->_debug) echo "   frame : UnitIdentifier=[{$unit_identifier}] FunctionCode=[{$modbus_function_code}]\n";
+		if($this->_debug) echo "           Data=[{$data}]\n";
 		
 		$header = "{$transaction_id}{$protocol_identifier}{$hexbytecount}{$unit_identifier}{$modbus_function_code}";
 		
 		if(strlen($header) != 16){
-			// Malformed TCP Frame "header" length
+			if($this->_debug) echo "[--] Malformed Modbus TCP Frame Header length, should be 16: length='".strlen($header)."', data='{$header}'\n";
 			throw new Exception("Malformed Modbus TCP Frame Header length, should be 16: length='".strlen($header)."', data='{$header}'");
 		}
 		
-		$payload = pack("H*","{$header}{$data_bytes}");
-		return $payload;
+		$packet = pack("H*","{$header}{$data}");
+		return $packet;
 	}
-
-	private function _DoModbusPoll($payload){
+  
+	/**
+	 * 
+	 *
+	 * @return returnpacket raw
+	 */
+	private function _DoModbusPoll($request){
+		if($this->_debug) echo "[ii] Sending packet .... \n";
 		if(!$this->_socket){
 			throw new Exception( "[!!] DoModbusAnalinkRequest() failed.\nReason: Socket not connected");
 		}
+		$payload = $request;
+		
 		$length = strlen($payload);
 		// send data
 		while (true) {
@@ -141,11 +151,24 @@ class rPHPModbus {
 				}
 		}
 		//read data
+		if($this->_debug) echo "[ii] Waiting for response ... \n";
 		$result = socket_read ($this->_socket, 4096);
 		if($result === FALSE){
-			throw new Exception( "[!!] Could not read server response in DoModbusAnalinkRequest()\n");
+			if($this->_debug) echo "[--] Could not read server response in _DoModbusPoll()\n";
+			throw new Exception( "Could not read server response in _DoModbusPoll()\n");
 		}
-		if($this->_debug) echo "[IN] {$result}\n";
+
+		// Check transaction_id of packet
+		$out_transaction = substr(self::ConvertStrToHex($payload),0,2);
+		$in_transaction = substr(self::ConvertStrToHex($result),0,2);
+
+		if($out_transaction == $in_transaction){
+			if($this->_debug) echo "[++] Got correct response _DoModbusPoll()\n";
+		}else{
+			if($this->_debug) echo "[--] Invalid response in _DoModbusPoll() (sent: '{$out_transaction }', got: '{$in_transaction}')\n";
+			throw new Exception( "Got invalid transaction id in _DoModbusPoll() (sent: '{$out_transaction }', got: '{$in_transaction}')\n");
+		}
+		
 		return $result;
 	}
 
@@ -153,21 +176,68 @@ class rPHPModbus {
 		$this->trid++;
 		if($this->trid == 15) $this->trid++; // bug in smarthouse modbus/tcp wrapper, so we avoid 0x0f transaction id
 		if($this->trid == 255) $this->trid = 0; // wrap
-		$trid_to_send = str_pad(dechex($this->trid), 4, "0", STR_PAD_LEFT);
-		if($this->_debug) echo "[DD] transaction_id='{$trid_to_send}'\n";
+		$trid_to_send = self::Convert10to16($this->trid);
+		if($this->_debug) echo "[++] Got next TransactionId: '0x{$trid_to_send}'\n";
 		return $trid_to_send;
 	}
 
 	// Convert result to Readable
 	private function _GetHexvalueFromModbusResult($result){
-		$raw = str_split($this->_ConvertStrToHex($result),2);
-		if($this->_debug) echo "[->] ".$this->_ConvertStrToHex($result)."\n";
+		$raw = str_split(self::ConvertStrToHex($result),2);
+		if($this->_debug) echo "[->] ".self::ConvertStrToHex($result)."\n";
 		$hvalue = $raw[count($raw)-1];
 		return $hvalue;
 	}
+	
+	private function _ParseModbusResult($result, $request){
+		$p = self::ConvertStrToHex($result);
+		$packet['header']['trid'] 						= substr($p,0,4);
+		$packet['header']['protoid'] 					= substr($p,4,4);
+		$packet['header']['remaining_bytes'] 	= substr($p,8,4);
+		
+		$packet['frame']['unit'] 							= substr($p,12,2);
+		$packet['frame']['function_code'] 		= substr($p,14,2);
+
+		$packet['frame']['byte_count'] 				= substr($p,16,2);
+		
+		$to_parse = substr($p,18);
+
+		switch(hexdec($packet['frame']['function_code'])){
+			case 1: //01 Read Coil Status
+				while(strlen($to_parse)>1){
+					$packet['frame']['register'][] 			= substr($to_parse, 0, 2);
+					$to_parse= substr($to_parse, 2 );
+				}
+			break;
+			case 2: // 02 Read Input Status
+				while(strlen($to_parse)>1){
+					$packet['frame']['register'][] 			= substr($to_parse, 0, 2);
+					$to_parse= substr($to_parse, 2 );
+				}
+			break;
+			case 3: // 03 Read Holding Registers
+				while(strlen($to_parse)>1){
+					$packet['frame']['register'][] 			= substr($to_parse, 0, 4);
+					$to_parse= substr($to_parse, 4 );
+				}
+			
+			break;
+			default:
+				throw new Exception("Cannot parse function_code '{$packet['frame']['function_code']}', NOT IMPLEMENTED!");
+			break;
+		}
+		
+		
+		if($this->_debug) echo "[++] Got Modbus Packet:\n";
+		if($this->_debug) echo "   header:  TransactionIdentifier=[{$packet['header']['trid']}] ProtocolIdentifier=[{$packet['header']['protoid']}] RemainingBytes=[{$packet['header']['remaining_bytes']}]\n";
+		if($this->_debug) echo "   frame :  ByteCount=[{$packet['frame']['byte_count']}] UnitIdentifier=[{$packet['frame']['unit']}] FunctionCode=[{$packet['frame']['function_code']}]\n";
+		if($this->_debug) echo "            Data=[".implode("",$packet['frame']['register'])."]\n";
+		//print_r($packet);
+		return $packet;
+	}
 
 	// Convert input to hex
-	private function _ConvertStrToHex($string){
+	public static function ConvertStrToHex($string){
     $hex='';
     for ($i=0; $i < strlen($string); $i++){
 			if(ord($string[$i]) < 15)
@@ -176,6 +246,11 @@ class rPHPModbus {
 				
     }
     return $hex;
+	}
+	
+	
+	public static function Convert10to16($input,$bytes=2){
+		return str_pad(dechex((int)$input), $bytes*2, "0", STR_PAD_LEFT);
 	}
 }
 
