@@ -1,43 +1,32 @@
-rPHPModbus - PHP classes for communicating with Modbus TCP controllers
-Copyright (C) 2013 Jon Tungland
+rPHPModbus
+=========
+by Jon Tungland // @runnane // www.runnane.no
 
-This file is part of rPHPModbus.
+Disclaimer
+-----------
 
-rPHPModbus is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+I am not responsible for any problems, crashes, failures or pain this piece of software will cause. Use it on your own risk.
 
-rPHPModbus is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with rPHPModbus.  If not, see <http://www.gnu.org/licenses/>.
-
-
------------------
-
-
-1. About:
-
+About
+-----------
  rPHPModbus is a set of PHP classes to communicate with modbus bus nodes. For now, function codes 1, 2 and 3 are implemented.
  In addition, rPHPDupline, a PHP class for communicating with the Carlo Gavazzi Analink/Dupline(r) Smart-House solution.
+ 
+Installation
+-----------
+Sync it with ``` git clone https://bitbucket.org/runnane/rphpmodbus.git rPHPModbus ```
+See examples.php for how to use it.
 
-2. Howto:	
 
- See examples.php for now.
+Todo/Known bugs:
+-----------
+* Modbus Exception Handling
+* Implementing Modbus function codes 4, 5, 6, 15, 16
+* Better request/response packaging (make objects?) rModbusRequest/rModbusResponse ?
+* phpDoc
 
-3. Todo:
-
- * Modbus Exception Handling
- * Implementing Modbus function codes 4, 5, 6, 15, 16
- * Better request/response packaging (make objects?) rModbusRequest/rModbusResponse ?
- * phpDoc
-
-4. References/ More reading:
-
- * http://en.wikipedia.org/wiki/Modbus
- * http://modbus.org/docs/Modbus_Application_Protocol_V1_1b3.pdf
- * http://modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf
+References/more reading:
+-----------
+* http://en.wikipedia.org/wiki/Modbus
+* http://modbus.org/docs/Modbus_Application_Protocol_V1_1b3.pdf
+* http://modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf
