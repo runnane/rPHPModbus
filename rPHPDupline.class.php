@@ -31,16 +31,16 @@ class rPHPDupline extends rPHPModbus {
 	} 
 
 	public function DuplineByFunction_ReadOutputStatus($function_id, $param_number, $param_index){
-		$param 				= "{$param_number}{$param_index}";
-		$function_id 	= self::Convert10to16($function_id, 2);
+		$param				= "{$param_number}{$param_index}";
+		$function_id	= self::Convert10to16($function_id, 2);
 		
-		$addr_hi 		= "ff";
-		$addr_lo 		= substr($function_id,0,2);
-		$points_hi 	= substr($function_id,2,2);
-		$points_lo 	= $param;
+		$addr_hi		= "ff";
+		$addr_lo		= substr($function_id,0,2);
+		$points_hi	= substr($function_id,2,2);
+		$points_lo	= $param;
 	
-		$result = $this->DoModbusFunction_01ReadCoilStatus(1, $addr_hi, $addr_lo, $points_hi, $points_lo);
-		$data = implode("",$result['frame']['register']);
+		$result			= $this->DoModbusFunction_01ReadCoilStatus(1, $addr_hi, $addr_lo, $points_hi, $points_lo);
+		$data				= implode("",$result['frame']['register']);
 		return $data;
 	}
 	

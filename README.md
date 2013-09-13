@@ -19,5 +19,25 @@ along with rPHPModbus.  If not, see <http://www.gnu.org/licenses/>.
 
 -----------------
 
-1. Howto
-	Se examples.php for now.
+
+1. About:
+
+ rPHPModbus is a set of PHP classes to communicate with modbus bus nodes. For now, function codes 1, 2 and 3 are implemented.
+ In addition, rPHPDupline, a PHP class for communicating with the Carlo Gavazzi Analink/Dupline(r) Smart-House solution.
+
+2. Howto:	
+
+ See examples.php for now.
+
+3. Todo:
+
+ * Modbus Exception Handling
+ * Implementing Modbus function codes 4, 5, 6, 15, 16
+ * Better request/response packaging (make objects?) rModbusRequest/rModbusResponse ?
+ * phpDoc
+
+4. References/ More reading:
+
+ * http://en.wikipedia.org/wiki/Modbus
+ * http://modbus.org/docs/Modbus_Application_Protocol_V1_1b3.pdf
+ * http://modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf

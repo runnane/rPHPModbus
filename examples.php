@@ -11,7 +11,7 @@
 require_once("rPHPDupline.class.php");
 
 $al = new rPHPDupline("172.20.100.4");
-$al->Debug(false);
+$al->Debug(true);
 $al->Connect();
 
 //////////////////////////////////////////////////////////

@@ -95,7 +95,7 @@ class rPHPModbus {
 		if(strlen($payload) != 8){
 			throw new Exception("Malformed _DoModbusFunction_Basic() parm_number length, should be 8: length='".strlen($payload)."', data='{$payload}'");
 		}
-		if($this->_debug) echo "[++] Address/Points: '{$payload }'\n";
+	//	if($this->_debug) echo "[++] Address/Points: '{$payload }'\n";
 		return $this->DoModbusQuery($slave_address, $function, $payload);
 	}
 	
