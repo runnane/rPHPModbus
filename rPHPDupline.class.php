@@ -17,39 +17,62 @@
 	
 	You should have received a copy of the GNU General Public License
 	along with rPHPModbus.  If not, see <http://www.gnu.org/licenses/>.
+	
+	Please see rPHPModbus.class.php for more info.
+	
 */
 
 require_once("rPHPModbus.class.php");
 
 class rPHPDupline extends rPHPModbus {
 	
-	
-	public function DuplineByFunction_ReadOutputStatus($function_id, $param_number){
-		$function_id = str_pad(dechex($function_id), 4, "0", STR_PAD_LEFT);
-		$hexresult = $this->DoModbusQuery(1, "ff{$function_id}{$param_number}");
-		return $hexresult;
-	}
-	
-	public function DuplineByFunction_ReadValue($function_id, $param_number){
-		$function_id = str_pad(dechex($function_id), 4, "0", STR_PAD_LEFT);
-		$hexresult = $this->DoModbusQuery(2, "ff{$function_id}{$param_number}");
-		return $hexresult;
-	}
-	
-	public function DuplineByFunction_ReadMultipleRegisters($function_id, $param_number=1, $param_index=0){
-		$function_id = str_pad(dechex($function_id), 4, "0", STR_PAD_LEFT);
-		$param = "{$param_number}{$param_index}";
-		if(strlen($param) != 2){
-			throw new Exception("Malformed DuplineByFunction_ReadMultipleRegisters() parm_number length, should be 2: length='".strlen($param)."', data='{$param}'");
-		}
-		$hexresult = $this->DoModbusQuery(3, "ff{$function_id}{$param}");
-		return $hexresult;
-	}
-	public function Modbus_PresetMultipleRegisters($function_id, $register_address, $number_of_registers){
+	public function __construct($host, $port=502) { 
+		parent::__construct($host, $port); 
+	} 
+
+	public function DuplineByFunction_ReadOutputStatus($function_id, $param_number, $param_index){
+		$param 				= "{$param_number}{$param_index}";
+		$function_id 	= self::Convert10to16($function_id, 2);
 		
+		$addr_hi 		= "ff";
+		$addr_lo 		= substr($function_id,0,2);
+		$points_hi 	= substr($function_id,2,2);
+		$points_lo 	= $param;
+	
+		$result = $this->DoModbusFunction_01ReadCoilStatus(1, $addr_hi, $addr_lo, $points_hi, $points_lo);
+		$data = implode("",$result['frame']['register']);
+		return $data;
 	}
+	
+	public function DuplineByFunction_ReadValue($function_id, $param_number, $param_index){
+		$param 				= "{$param_number}{$param_index}";
+		$function_id 	= self::Convert10to16($function_id, 2);
+		
+		$addr_hi 		= "ff";
+		$addr_lo 		= substr($function_id,0,2);
+		$points_hi 	= substr($function_id,2,2);
+		$points_lo 	= $param;
+		$result = $this->DoModbusFunction_02ReadInputStatus(1, $addr_hi, $addr_lo, $points_hi, $points_lo);
+		$data = implode("",$result['frame']['register']);
+		return $data;
+	}
+	
+	public function DuplineByFunction_ReadMultipleRegisters($function_id, $param_number, $param_index){
+		$param 				= "{$param_number}{$param_index}";
+		$function_id 	= self::Convert10to16($function_id, 2);
+		
+		$addr_hi 		= "ff";
+		$addr_lo 		= substr($function_id,0,2);
+		$points_hi 	= substr($function_id,2,2);
+		$points_lo 	= $param;
+		
+		$result = $this->DoModbusFunction_03ReadHoldingRegisters(1, $addr_hi, $addr_lo, $points_hi, $points_lo);
+		$data = implode("",$result['frame']['register']);
+		return $data;
+	}
+	
 
-
+/*
 	public function DuplineByFunction_PresetMultipleRegisters($function_id, $register_address, $number_of_registers, $parm_number, $parm_index, $register_value){
 		$byte_count = $number_of_registers*2;
 		$length = $byte_count;
@@ -76,38 +99,63 @@ class rPHPDupline extends rPHPModbus {
 		$register_value = str_pad(dechex($register_value), $rest*2, "0", STR_PAD_LEFT);
 		
 		if($this->_debug) echo "[Packet] register_address=[{$register_address}] number_of_registers=[{$number_of_registers}] byte_count=[{$byte_count}] function_id=[{$function_id}] parm_number=[{$parm_number}] parm_index=[{$parm_index}] register_value=[{$register_value}]\n";
-		$hexresult = $this->DoModbusQuery(16, "{$register_address}{$number_of_registers}{$byte_count}{$function_id}{$parm_number}{$parm_index}{$register_value}");
+		$hexresult = $this->DoModbusQuery(1, 16, "{$register_address}{$number_of_registers}{$byte_count}{$function_id}{$parm_number}{$parm_index}{$register_value}");
 	}
-	
-//////////////////// Spesific Module Functions
+	*/
 
-	public function GetCurrentTemperature($Sensor_Index){
-		$hexresult = $this->DuplineByFunction_ReadValue($Sensor_Index, "00");
-		$value = hexdec($hexresult);
+
+	/**
+	 * Get Dupline (Analink) temperature by function_id
+	 * Tested with BEW-TEMDIS (ELKO Temperature Controller)
+	 * 
+	 * @param int $function_id Decimal function number of the Temperature function
+	 * 
+	 * @return float The current temperature for the BEW-TEMDIS
+	 */
+	public function GetTemperatureByFunctionId_BEWTEMDIS($function_id){
+		if(!$function_id){
+			throw new Exception("Missing functionId");
+		}
+		
+		$result = $this->DuplineByFunction_ReadValue($function_id, 0, 0);
+		$value = hexdec($result);
 		if($value>1) $value -= 1.0;
 		$value = number_format(($value*50)/255,1);
 		return $value;
 	}
 	
-	public function GetTermostatNormal($Sensor_Index, $energysaving=false){
-		$es = $energysaving ? 0x1 : 0x0;
-		$hexresult = $this->DuplineByFunction_ReadMultipleRegisters($Sensor_Index, $es, 0x0);
-		$value = hexdec($hexresult)/10.0;
+	/**
+	 * Get Dupline (Analink) temperature by function_id
+	 * Tested with BEW-TEMDIS (ELKO Temperature Controller)
+	 * 
+	 * @param int $function_id Decimal function number of the Temperature function
+	 * 
+	 * @return float The current temperature for the BEW-TEMDIS
+	 */
+	public function GetTermostatByFunctionId_BEWTEMDIS($function_id, $energysaving=false){
+		if(!$function_id){			throw new Exception("Missing functionId");		}
+		$es = $energysaving ? 1 : 0;
+		$result = $this->DuplineByFunction_ReadMultipleRegisters($function_id, $es, 0);
+		$value = hexdec($result)/10.0;
 		return $value;
 	}
 	
-
-	public function GetBitValue($Sensor_Index){
-		$hexresult = $this->DuplineByFunction_ReadOutputStatus($Sensor_Index, "00");
+	
+	public function GetBitValueByFunctionId($function_id){
+		if(!$function_id){			throw new Exception("Missing functionId");		}
+		$hexresult = $this->DuplineByFunction_ReadOutputStatus($function_id, 0, 0);
 		$value = hexdec($hexresult);
 		return $value;
 	}
-	
-	public function DoButtonPress($Sensor_Index, $waittime=0.5){
+	/*
+	public function DoButtonPress($function_id, $waittime=0.5){
+		if(!$function_id){
+			throw new Exception("Missing functionId");
+		}
 		// Toggle 
-		$hexresult = $this->DuplineByFunction_PresetMultipleRegisters($Sensor_Index, 65280, 0x2, 0x0, NULL, 0x1);
+		$hexresult = $this->DuplineByFunction_PresetMultipleRegisters($function_id, 65280, 0x2, 0x0, NULL, 0x1);
 		usleep($waittime * 1000 * 100); // wait 500msec
-		$hexresult = $this->DuplineByFunction_PresetMultipleRegisters($Sensor_Index, 65280, 0x2, 0x0, NULL, 0x0);
+		$hexresult = $this->DuplineByFunction_PresetMultipleRegisters($function_id, 65280, 0x2, 0x0, NULL, 0x0);
 		return true;
 	}
 	
@@ -119,7 +167,7 @@ class rPHPDupline extends rPHPModbus {
 	}
 	
 	public function SetBit($adr=false,$data=false){
-		$hexresult = $this->DoModbusQuery(5, "{$adr}{$data}");
+		$hexresult = $this->DoModbusQuery(1, 5, "{$adr}{$data}");
 		$value = hexdec($hexresult);
 		return $value;
 	}
@@ -129,7 +177,7 @@ class rPHPDupline extends rPHPModbus {
 		$value = hexdec($hexresult);
 		return $value;
 	}
-
+	*/
 //////////////////// Dupline Spesific Functions (By Function ID)
 
 	
