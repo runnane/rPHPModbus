@@ -9,7 +9,7 @@ I am not responsible for any problems, crashes, failures or pain this piece of s
 
 About
 -----------
-rPHPModbus is a set of PHP classes to communicate with modbus bus nodes. For now, function codes 1, 2 and 3 are implemented.
+rPHPModbus is a set of PHP classes to communicate with modbus bus nodes. For now, function codes 1, 2, 3 and 5 are implemented.
 In addition, rPHPDupline, a PHP class for communicating with the Carlo Gavazzi Analink/Dupline(r) Smart-House solution is attached.
 Tested on debian6 amd64 against Carlo Gavazzi Smart-House WinCE Based Controller BH8-CTRLX-230 running fw 3.02.04.
  
@@ -22,11 +22,10 @@ See examples.php for how to use it.
 Todo/Known bugs:
 -----------
 * Modbus Exception Handling
-* Implementing Modbus function codes 4, 5, 6, 15, 16
+* Implementing Modbus function codes 4, 6, 15, 16
 * Better request/response packaging (make objects?) rModbusRequest/rModbusResponse ?
 * phpDoc
 * Check compability with other archs/os-es
-* Add Dupline address mapping function (A1->0x0, B8->0xF etc and vice versa)
 
 References/more reading:
 -----------
