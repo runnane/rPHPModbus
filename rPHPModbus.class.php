@@ -70,7 +70,7 @@ class rPHPModbus {
 		
 		if (!extension_loaded('sockets')) {
 			if($this->_debug) echo "[--] rPHPModbus() cannot initialize, required sockets extension not loaded\n";
-				throw new Exception( "rPHPModbus() cannot initialize, required sockets extension not loaded" );
+			throw new Exception( "rPHPModbus() cannot initialize, required sockets extension not loaded" );
 		}
 		//$this->_sec = 30;
 		//$this->_usec = 30;
@@ -117,7 +117,7 @@ class rPHPModbus {
 			$err = socket_strerror(socket_last_error($this->_socket));
 			if($this->_debug) echo "[--] socket_connect() failed in rPHPModbus->Connect(): ($err)\n";
 			throw new Exception( "socket_connect() failed in Connect().\nReason: ($err)" );
-		} else {
+		}else{
 			if($this->_debug) echo "[++] Successfully connected to host {$this->_host}\n";
 		}
 		
@@ -240,25 +240,28 @@ class rPHPModbus {
 	 */
 	private function _DoModbusPoll($request){
 		if($this->_debug) echo "[ii] Sending packet .... \n";
+		
 		if(!$this->_socket){
 			throw new Exception( "[!!] _DoModbusPoll() failed.\nReason: Socket not connected");
 		}
-		$payload = $request;
 		
+		$payload = $request;
 		$length = strlen($payload);
-		// send data
+		
+		// Send data
 		while (true) {
-				$sent = socket_write($this->_socket, $payload, $length);
-				if ($sent === false) {
-						break;
-				}
-				if ($sent < $length) {
-						$payload = substr($payload, $sent);
-						$length -= $sent;
-				} else {
-						break;
-				}
+			$sent = socket_write($this->_socket, $payload, $length);
+			if ($sent === false) {
+				break;
+			}
+			if ($sent < $length) {
+				$payload = substr($payload, $sent);
+				$length -= $sent;
+			}else{
+				break;
+			}
 		}
+		
 		//Read data
 		if($this->_debug) echo "[ii] Waiting for response ... \n";
 		$result = socket_read ($this->_socket, 4096);
@@ -374,13 +377,14 @@ class rPHPModbus {
 	 * @return string
 	 */
 	public static function ConvertStrToHex($string){
-    $hex='';
-    for ($i=0; $i < strlen($string); $i++){
-			if(ord($string[$i]) < 15)
-			  $hex .= "0";
-      $hex .= dechex(ord($string[$i]));
-    }
-    return $hex;
+		$hex='';
+		for ($i=0; $i < strlen($string); $i++){
+			if(ord($string[$i]) < 15){
+				$hex .= "0";
+			}
+			$hex .= dechex(ord($string[$i]));
+		}
+		return $hex;
 	}
 	
 	/**
