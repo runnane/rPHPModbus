@@ -54,7 +54,7 @@ class rPHPModbus {
 	/** 
 	 * Array with which function codes we have implemented
 	 */	
-	private $_ImplementedModbusFunctionCodes = array(1, 2, 3);
+	private $_ImplementedModbusFunctionCodes = array(1, 2, 3, 5);
 	
 	/** 
 	 * Constructor
@@ -190,18 +190,12 @@ class rPHPModbus {
 	
 	/** 
 	 *
-	 *
-	 *
-	 *
 	 */
 	public function DoModbusFunction_01ReadCoilStatus($slave_address, $addr_hi, $addr_lo, $points_hi, $points_lo){
 		return $this->_DoModbusFunction_Basic($slave_address, 1, $addr_hi, $addr_lo, $points_hi, $points_lo);
 	}
 	
 	/** 
-	 *
-	 *
-	 *
 	 *
 	 */
 	public function DoModbusFunction_02ReadInputStatus($slave_address, $addr_hi, $addr_lo, $points_hi, $points_lo){
@@ -210,9 +204,6 @@ class rPHPModbus {
 	
 	/** 
 	 *
-	 *
-	 *
-	 *
 	 */
 	public function DoModbusFunction_03ReadHoldingRegisters($slave_address, $addr_hi, $addr_lo, $points_hi, $points_lo){
 		return $this->_DoModbusFunction_Basic($slave_address, 3, $addr_hi, $addr_lo, $points_hi, $points_lo);
@@ -220,8 +211,14 @@ class rPHPModbus {
 	
 	/** 
 	 *
-	 *
-	 *
+	 */
+	public function DoModbusFunction_05WriteSingleCoil($slave_address, $addr_hi, $addr_lo, $value_hi, $value_lo){
+		return $this->_DoModbusFunction_Basic($slave_address, 5, $addr_hi, $addr_lo, $value_hi, $value_lo);
+	}
+	
+	
+	
+	/** 
 	 *
 	 */
 	private function _DoModbusFunction_Basic($slave_address, $function, $addr_hi, $addr_lo, $points_hi, $points_lo){
@@ -326,42 +323,60 @@ class rPHPModbus {
 		
 		$packet['frame']['unit'] 							= substr($p,12,2);
 		$packet['frame']['function_code'] 		= substr($p,14,2);
-
-		$packet['frame']['byte_count'] 				= substr($p,16,2);
-		
-		$to_parse = substr($p,18);
-		$packet['frame']['register'] = array();
-
+	
 		if(!in_array($packet['frame']['function_code'], $this->_ImplementedModbusFunctionCodes)){
 			if($this->_debug) echo "[--] Modbus function code '{$modbus_function_code}' not implemented, aborting\n";
 			throw new Exception("Modbus function code '{$modbus_function_code}' not implemented, aborting");
 		}
+
 		
-		$register_size = 2;
 		// TODO: Rewrite this for more effective/common parsing needs
 		switch(hexdec($packet['frame']['function_code'])){
+			
 			case 1:  // 01 Read Coil Status
+				$packet['frame']['byte_count'] 	= substr($p, 16, 2);
+				$to_parse 											= substr($p, 18);
+				$register_size 									= 2;
+			break;
+			
 			case 2:  // 02 Read Input Status
-			case 5:  // 05 Write Single Coil
-			case 15: // 15 Write Multiple Coils
-				$register_size = 2;
+				$packet['frame']['byte_count'] 	= substr($p, 16, 2);
+				$to_parse 											= substr($p, 18);
+				$register_size 									= 2;
 			break;
+			
 			case 3: // 03 Read Holding Registers
-				$register_size = 4;
+				$packet['frame']['byte_count'] 	= substr($p, 16, 2);
+				$to_parse 											= substr($p, 18);
+				$register_size 									= 4;
 			break;
+			
+			case 5:  // 05 Write Single Coil
+				$packet['frame']['byte_count'] 	= 0;
+				$to_parse 											= substr($p, 16);
+				$register_size 									= 2;
+			break;
+			
 			default:
 				// THIS SHOULD NOT BE POSSIBLE WITH THIS APPROACH :(
 				throw new Exception("Cannot parse function_code '{$packet['frame']['function_code']}', NOT IMPLEMENTED!");
 			break;
 		}
 		
-		while(strlen($to_parse)>1){
-			$packet['frame']['register'][] 			= substr($to_parse, 0, $register_size);
+		$packet['frame']['register'] = array();
+		while(strlen($to_parse)>0){
+			$packet['frame']['register'][] 	= substr($to_parse, 0, $register_size);
 			$to_parse = substr($to_parse, $register_size);
 		}
 
 		
+		
+		
+
+
+
 		$datapacket = @implode("",$packet['frame']['register']);
+		
 		if($this->_debug) echo "[++] Got Modbus Packet:\n";
 		if($this->_debug) echo "   header:  TransactionIdentifier=[{$packet['header']['trid']}] ProtocolIdentifier=[{$packet['header']['protoid']}] RemainingBytes=[{$packet['header']['remaining_bytes']}]\n";
 		if($this->_debug) echo "   frame :  ByteCount=[{$packet['frame']['byte_count']}] UnitIdentifier=[{$packet['frame']['unit']}] FunctionCode=[{$packet['frame']['function_code']}]\n";

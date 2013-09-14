@@ -26,10 +26,16 @@ require_once("rPHPModbus.class.php");
 
 class rPHPDupline extends rPHPModbus {
 	
+	/** 
+	 *
+	 */
 	public function __construct($host, $port=502) { 
 		parent::__construct($host, $port); 
 	} 
 
+	/** 
+	 *
+	 */
 	public function DuplineByFunction_ReadOutputStatus($function_id, $param_number, $param_index){
 		$param				= "{$param_number}{$param_index}";
 		$function_id	= self::Convert10to16($function_id, 2);
@@ -44,6 +50,9 @@ class rPHPDupline extends rPHPModbus {
 		return $data;
 	}
 	
+	/** 
+	 *
+	 */
 	public function DuplineByFunction_ReadValue($function_id, $param_number, $param_index){
 		$param 				= "{$param_number}{$param_index}";
 		$function_id 	= self::Convert10to16($function_id, 2);
@@ -57,6 +66,9 @@ class rPHPDupline extends rPHPModbus {
 		return $data;
 	}
 	
+	/** 
+	 *
+	 */
 	public function DuplineByFunction_ReadMultipleRegisters($function_id, $param_number, $param_index){
 		$param 				= "{$param_number}{$param_index}";
 		$function_id 	= self::Convert10to16($function_id, 2);
@@ -71,38 +83,19 @@ class rPHPDupline extends rPHPModbus {
 		return $data;
 	}
 	
-
-/*
-	public function DuplineByFunction_PresetMultipleRegisters($function_id, $register_address, $number_of_registers, $parm_number, $parm_index, $register_value){
-		$byte_count = $number_of_registers*2;
-		$length = $byte_count;
-		$rest = $byte_count;
+	/** 
+	 *
+	 */
+	public function Dupline_SetSingleOutputBit($address, $data){
+		$addr_hi 		= substr($address,0,2);
+		$addr_lo 		= substr($address,2,2);
+		$points_hi 	= substr($data,0,2);
+		$points_lo 	= substr($data,2,2);
 		
-		$number_of_registers = str_pad(dechex($number_of_registers), 4, "0", STR_PAD_LEFT);
-		$byte_count = str_pad(dechex($byte_count), 2, "0", STR_PAD_LEFT);
-		$function_id = str_pad(dechex($function_id), 4, "0", STR_PAD_LEFT);
-		
-		// byte 1+2
-		$register_address = str_pad(dechex($register_address), 4, "0", STR_PAD_LEFT);
-		$rest -=2;
-		
-		// byte 3
-		$parm_number = str_pad(dechex($parm_number), 2, "0", STR_PAD_LEFT);
-		$rest -=1;
-		
-		// byte 4
-		if($parm_index !== NULL){
-			$parm_index = str_pad(dechex($parm_index), 2, "0", STR_PAD_LEFT);
-			$rest -=1;
-		}
-			
-		$register_value = str_pad(dechex($register_value), $rest*2, "0", STR_PAD_LEFT);
-		
-		if($this->_debug) echo "[Packet] register_address=[{$register_address}] number_of_registers=[{$number_of_registers}] byte_count=[{$byte_count}] function_id=[{$function_id}] parm_number=[{$parm_number}] parm_index=[{$parm_index}] register_value=[{$register_value}]\n";
-		$hexresult = $this->DoModbusQuery(1, 16, "{$register_address}{$number_of_registers}{$byte_count}{$function_id}{$parm_number}{$parm_index}{$register_value}");
+		$result = $this->DoModbusFunction_05WriteSingleCoil(1, $addr_hi, $addr_lo, $points_hi, $points_lo);
+		$data = implode("",$result['frame']['register']);
+		return $result;
 	}
-	*/
-
 
 	/**
 	 * Get Dupline (Analink) temperature by function_id
@@ -140,26 +133,35 @@ class rPHPDupline extends rPHPModbus {
 		return $value;
 	}
 	
-	
+	/** 
+	 *
+	 */
 	public function GetBitValueByFunctionId($function_id){
 		if(!$function_id){			throw new Exception("Missing functionId");		}
 		$hexresult = $this->DuplineByFunction_ReadOutputStatus($function_id, 0, 0);
 		$value = hexdec($hexresult);
 		return $value;
 	}
-	
-	
+
+	/** 
+	 *
+	 */
 	public function ReadFullDuplineOutputStatusTable(){
 		$packet = $this->DoModbusFunction_03ReadHoldingRegisters(1,"00","00","00","08");
 		return $this->ParseFullDuplineTable($packet);
 	}
 
+	/** 
+	 *
+	 */
 	public function ReadFullDuplineInputStatusTable(){
 		$packet = $this->DoModbusFunction_03ReadHoldingRegisters(1,"00","10","00","08");
 		return $this->ParseFullDuplineTable($packet);
 	}
-
 	
+	/** 
+	 *
+	 */
 	private function ParseFullDuplineTable($packet){
 		$binstr = self::GetBitFromHex(implode("",$packet['frame']['register']));
 		$i=0;
@@ -178,6 +180,38 @@ class rPHPDupline extends rPHPModbus {
 		return $output;
 	}
 	
+
+	/*
+	public function DuplineByFunction_PresetMultipleRegisters($function_id, $register_address, $number_of_registers, $parm_number, $parm_index, $register_value){
+		$byte_count = $number_of_registers*2;
+		$length = $byte_count;
+		$rest = $byte_count;
+		
+		$number_of_registers = str_pad(dechex($number_of_registers), 4, "0", STR_PAD_LEFT);
+		$byte_count = str_pad(dechex($byte_count), 2, "0", STR_PAD_LEFT);
+		$function_id = str_pad(dechex($function_id), 4, "0", STR_PAD_LEFT);
+		
+		// byte 1+2
+		$register_address = str_pad(dechex($register_address), 4, "0", STR_PAD_LEFT);
+		$rest -=2;
+		
+		// byte 3
+		$parm_number = str_pad(dechex($parm_number), 2, "0", STR_PAD_LEFT);
+		$rest -=1;
+		
+		// byte 4
+		if($parm_index !== NULL){
+			$parm_index = str_pad(dechex($parm_index), 2, "0", STR_PAD_LEFT);
+			$rest -=1;
+		}
+			
+		$register_value = str_pad(dechex($register_value), $rest*2, "0", STR_PAD_LEFT);
+		
+		if($this->_debug) echo "[Packet] register_address=[{$register_address}] number_of_registers=[{$number_of_registers}] byte_count=[{$byte_count}] function_id=[{$function_id}] parm_number=[{$parm_number}] parm_index=[{$parm_index}] register_value=[{$register_value}]\n";
+		$hexresult = $this->DoModbusQuery(1, 16, "{$register_address}{$number_of_registers}{$byte_count}{$function_id}{$parm_number}{$parm_index}{$register_value}");
+	}
+	*/
+
 	/*
 	*/
 	

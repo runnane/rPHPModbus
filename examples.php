@@ -11,7 +11,7 @@
 require_once("rPHPDupline.class.php");
 
 $al = new rPHPDupline("172.20.100.4");
-$al->Debug(false);
+$al->Debug(true);
 $al->Connect();
 
 //////////////////////////////////////////////////////////
@@ -61,12 +61,22 @@ $al->Connect();
 //echo "[ii] Temperature in function 11 is {$temperature} C\n\n";
 
 // Get Dupline Output Status for addresses A1-08
-$table = $al->ReadFullDuplineOutputStatusTable();
-echo "[ii] Dupline Output Address A5 is {$table['A5']}\n\n";
+//$table = $al->ReadFullDuplineOutputStatusTable();
+//echo "[ii] Dupline Output Address A5 is {$table['A5']}\n\n";
 
 // Get Dupline Input Status for addresses A1-08
-$table = $al->ReadFullDuplineInputStatusTable();
-echo "[ii] Dupline Input Address A2 is {$table['A2']}\n\n";
+//$table = $al->ReadFullDuplineInputStatusTable();
+//echo "[ii] Dupline Input Address A2 is {$table['A2']}\n\n";
+
+// Set Dupline Adress A1 to 1
+$table = $al->Dupline_SetSingleOutputBit("1500","0001");
+print_r($table);
+sleep(1);
+$table = $al->Dupline_SetSingleOutputBit("1500","0000");
+print_r($table);
+//echo "[ii] Dupline Input Address A2 is {$table['A2']}\n\n";
+
+
 
 
 
