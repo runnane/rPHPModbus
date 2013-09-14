@@ -148,15 +148,41 @@ class rPHPDupline extends rPHPModbus {
 		return $value;
 	}
 	
-	/*
-	public function ReadFullDuplineOutputStatusTable(){
-		$packet = $al->DoModbusFunction_03ReadHoldingRegisters(1,"00","00","00","08");
-	}
 	
 	public function ReadFullDuplineOutputStatusTable(){
-		$packet = $al->DoModbusFunction_03ReadHoldingRegisters(1,"00","10","00","08");
+		$packet = $this->DoModbusFunction_03ReadHoldingRegisters(1,"00","00","00","08");
+		return $this->ParseFullDuplineTable($packet);
 	}
+
+	public function ReadFullDuplineInputStatusTable(){
+		$packet = $this->DoModbusFunction_03ReadHoldingRegisters(1,"00","10","00","08");
+		return $this->ParseFullDuplineTable($packet);
+	}
+
+	
+	private function ParseFullDuplineTable($packet){
+		$binstr = self::GetBitFromHex(implode("",$packet['frame']['register']));
+		$i=0;
+		for($grp = 65; $grp <= 80; $grp += 2){
+
+			for($chan = 8; $chan > 0; $chan--){
+				$output[chr($grp+1) . $chan] =  $binstr{$i};
+				$i++;
+			}
+			for($chan = 8; $chan > 0; $chan--){
+				$output[chr($grp) . $chan] =  $binstr{$i};
+				$i++;
+			}
+		}
+		ksort($output);
+		return $output;
+	}
+	
+	/*
 	*/
+	
+	
+	
 	/*
 	public function DoButtonPress($function_id, $waittime=0.5){
 		if(!$function_id){

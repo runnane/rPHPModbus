@@ -397,6 +397,20 @@ class rPHPModbus {
 	public static function Convert10to16($input,$bytes=2){
 		return str_pad(dechex((int)$input), $bytes*2, "0", STR_PAD_LEFT);
 	}
+
+	/**
+	 *
+	 *
+	 */	
+	public static function GetBitFromHex($input){
+		$parts = str_split($input);
+		$ret = "";
+		foreach($parts as $part){
+			$ret .= str_pad(decbin(hexdec($part{0})),4,0,STR_PAD_LEFT);
+		}
+		return $ret;
+	}
+
 }
 
 ?>
