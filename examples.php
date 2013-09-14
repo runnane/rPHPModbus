@@ -11,7 +11,7 @@
 require_once("rPHPDupline.class.php");
 
 $al = new rPHPDupline("172.20.100.4");
-$al->Debug(true);
+$al->Debug(false);
 $al->Connect();
 
 //////////////////////////////////////////////////////////
@@ -19,16 +19,16 @@ $al->Connect();
 //////////////////////////////////////////////////////////
 
 // Get 1 coil status starting with address 0x0504 (Clean Modbus code)
-//$packet = $al->DoModbusFunction_01ReadCoilStatus(1,"05","04","00","01");
-//echo "[ii] Coil Status 0x0504 is {$packet['frame']['register'][0]}\n\n";
+$packet = $al->DoModbusFunction_01ReadCoilStatus(1,"05","04","00","01");
+echo "[ii] Coil Status 0x0504 is {$packet['frame']['register'][0]}\n\n";
 
 //////////////////////////////////////////////////////////
 // Example of 02 Read Input Status
 //////////////////////////////////////////////////////////
 
 // Get 1 input status starting with address 0x0600 (Clean Modbus code)
-//$packet = $al->DoModbusFunction_02ReadInputStatus(1,"06","00","00","01");
-//echo "[ii] Input Status 0x0600 is {$packet['frame']['register'][0]}\n\n";
+$packet = $al->DoModbusFunction_02ReadInputStatus(1,"06","00","00","01");
+echo "[ii] Input Status 0x0600 is {$packet['frame']['register'][0]}\n\n";
 
 
 //////////////////////////////////////////////////////////
@@ -36,8 +36,8 @@ $al->Connect();
 //////////////////////////////////////////////////////////
 
 // Get 1 holding registers starting with address 0x0000 (Clean Modbus code)
-//$packet = $al->DoModbusFunction_03ReadHoldingRegisters(1,"00","00","00","01");
-//echo "[ii] Contents of Holding Register 0x0000 is {$packet['frame']['register'][0]}\n\n";
+$packet = $al->DoModbusFunction_03ReadHoldingRegisters(1,"00","00","00","01");
+echo "[ii] Contents of Holding Register 0x0000 is {$packet['frame']['register'][0]}\n\n";
 
 
 //////////////////////////////////////////////////////////
@@ -45,20 +45,20 @@ $al->Connect();
 //////////////////////////////////////////////////////////
 
 // Get the termostat heating level (normal) form a BEW-TEMDIS based temperature control unit function
-//$temperature = $al->GetTermostatByFunctionId_BEWTEMDIS(11);
-//echo "[ii] Termostat normal in function 11 is {$temperature} C\n\n";
+$temperature = $al->GetTermostatByFunctionId_BEWTEMDIS(11);
+echo "[ii] Termostat normal in function 11 is {$temperature} C\n\n";
 
 // Get the termostat heating level (power-saving) form a BEW-TEMDIS based temperature control unit function
-//$temperature = $al->GetTermostatByFunctionId_BEWTEMDIS(11, 1);
-//echo "[ii] Termostat energysaving in function 11 is {$temperature} C\n\n";
+$temperature = $al->GetTermostatByFunctionId_BEWTEMDIS(11, 1);
+echo "[ii] Termostat energysaving in function 11 is {$temperature} C\n\n";
 
 // Get a bitvalue (0/1) from a Dupline function. I.e. on/off light function.
-//$status = $al->GetBitValueByFunctionId(37);
-//echo "[ii] Function status is {$status}\n\n";
+$status = $al->GetBitValueByFunctionId(37);
+echo "[ii] Function 37 has status {$status}\n\n";
 
 // Get Dupline (Analink) temperature by function_id from a BEW-TEMDIS based temperature control unit
-//$temperature = $al->GetTemperatureByFunctionId_BEWTEMDIS(11);
-//echo "[ii] Temperature in function 11 is {$temperature} C\n\n";
+$temperature = $al->GetTemperatureByFunctionId_BEWTEMDIS(11);
+echo "[ii] Temperature in function 11 is {$temperature} C\n\n";
 
 
 $al->Disconnect();
