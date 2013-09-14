@@ -86,9 +86,12 @@ class rPHPDupline extends rPHPModbus {
 	/** 
 	 *
 	 */
-	public function Dupline_SetSingleOutputBit($address, $data){
-		$addr_hi 		= substr($address,0,2);
-		$addr_lo 		= substr($address,2,2);
+	public function Dupline_SetSingleOutputBit($duplineaddr, $data){
+		
+		$register_address = 1500 + $this->GetRegisterAddressOffsetByDuplineAddress($duplineaddr);
+		
+		$addr_hi 		= substr($register_address,0,2);
+		$addr_lo 		= substr($register_address,2,2);
 		$points_hi 	= substr($data,0,2);
 		$points_lo 	= substr($data,2,2);
 		
@@ -162,14 +165,14 @@ class rPHPDupline extends rPHPModbus {
 	/** 
 	 *
 	 */
-	public function ToggleCoil($address,$msecdelay=500){
-		if(!$address){
-			throw new Exception("Missing functionId");
+	public function ToggleDuplineOutputChannel($dupline_address, $msecdelay=500){
+		if(!$dupline_address){
+			throw new Exception("Missing dupline address");
 		}
 		// Toggle 
-		$table = $this->Dupline_SetSingleOutputBit($address,"0001");
+		$table = $this->Dupline_SetSingleOutputBit($dupline_address, "0001");
 		usleep($msecdelay * 1000);	// wait $msecdelay msec
-		$table = $this->Dupline_SetSingleOutputBit($address,"0000");
+		$table = $this->Dupline_SetSingleOutputBit($dupline_address, "0000");
 		return true;
 	}
 	
@@ -192,6 +195,18 @@ class rPHPDupline extends rPHPModbus {
 		}
 		ksort($output);
 		return $output;
+	}
+	
+	/**
+	 * This function accepts a Dupline Address (ie. A3 or E1) and converts it
+	 * to the offset from the register address A1 has. It does not account
+	 * for other offsets than ++ increments. (Limit/On/Off/Delays)
+	 *
+	 * @parm string $dupline_address The Dupline Address
+	 * @returns number The register address offset relative to A1. 
+	 */
+	public function GetRegisterAddressOffsetByDuplineAddress($dupline_address){
+		return (ord(strtoupper($dupline_address{0}))-65)*8 + (((int)$dupline_address{1})-1);
 	}
 	
 
@@ -250,30 +265,12 @@ class rPHPDupline extends rPHPModbus {
 		return true;
 	}
 	
-	public function SetBit($adr=false,$data=false){
-		$hexresult = $this->DoModbusQuery(1, 5, "{$adr}{$data}");
-		$value = hexdec($hexresult);
-		return $value;
-	}
-	
 	public function SetFunctionBit($Sensor_Index, $parm1, $parm2, $value){
 		$hexresult = $this->DuplineByFunction_PresetMultipleRegisters($Sensor_Index, 65280, 0x2, $parm1, $parm2, $value);
 		$value = hexdec($hexresult);
 		return $value;
 	}
 	*/
-//////////////////// Dupline Spesific Functions (By Function ID)
-
-	
-	
-	
-	
-	// Button press
-	// start numreg  bb b1 b2 b3 b4
-	// ff00  0002    04 00 36 00 01
-	// ff00  0002    04 00 30 00 01
-  // ff00  0002    04 00 30 00 00 1
-	// ff00  0002    04 00 25 00 01
 
 }
 

@@ -75,11 +75,14 @@ $al->Connect();
 //echo "[ii] Dupline Input Address A2 is {$table['A2']}\n\n";
 
 // Set Dupline Adress A1 to 1
-//$table = $al->Dupline_SetSingleOutputBit("1500","0001");
+//$table = $al->Dupline_SetSingleOutputBit("A1","0001");
 		
 // Simulate (buttonpress) on A1 (100msec seems like the fastest possible toggle)
-$table = $al->ToggleCoil("1500",100);
+//$table = $al->ToggleDuplineOutputChannel("A4",200);
 
+// Get RegisterAddress offset for Dupline Address i3:
+//$v = $al->GetRegisterAddressOffsetByDuplineAddress("i3");
+//echo "[ii] Dupline  Address I3 has register address offset '{$v}'\n\n";
 
 
 
