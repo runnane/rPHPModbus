@@ -4,14 +4,20 @@
 	This file is part of rPHPModbus.
 	Please see rPHPModbus.class.php for more info.
 	
-	This file implements function which can be used for Carlo Gavazzi Smart-House solutions. 
+	This file shows function which can be used for general modbus buses, and 
+	additionally Carlo Gavazzi Smart-House solutions (Dupline). 
 	
 */
 
+// We use the rPHPDupline class here since we want Dupline functions in addition
+// to "clean" Modbus functions.
 require_once("rPHPDupline.class.php");
-
 $al = new rPHPDupline("172.20.100.4");
+
+// Enable debugging
 $al->Debug(true);
+
+// Connect
 $al->Connect();
 
 //////////////////////////////////////////////////////////
@@ -69,12 +75,13 @@ $al->Connect();
 //echo "[ii] Dupline Input Address A2 is {$table['A2']}\n\n";
 
 // Set Dupline Adress A1 to 1
-$table = $al->Dupline_SetSingleOutputBit("1500","0001");
-print_r($table);
-sleep(1);
-$table = $al->Dupline_SetSingleOutputBit("1500","0000");
-print_r($table);
-//echo "[ii] Dupline Input Address A2 is {$table['A2']}\n\n";
+//$table = $al->Dupline_SetSingleOutputBit("1500","0001");
+		
+// Simulate (buttonpress) on A1 (100msec seems like the fastest possible toggle)
+$table = $al->ToggleCoil("1500",100);
+
+
+
 
 
 

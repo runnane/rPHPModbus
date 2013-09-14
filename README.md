@@ -26,6 +26,7 @@ Todo/Known bugs:
 * Better request/response packaging (make objects?) rModbusRequest/rModbusResponse ?
 * phpDoc
 * Check compability with other archs/os-es
+* Add Dupline address mapping function (A1->0x0, B8->0xF etc and vice versa)
 
 References/more reading:
 -----------

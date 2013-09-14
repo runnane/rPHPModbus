@@ -162,6 +162,20 @@ class rPHPDupline extends rPHPModbus {
 	/** 
 	 *
 	 */
+	public function ToggleCoil($address,$msecdelay=500){
+		if(!$address){
+			throw new Exception("Missing functionId");
+		}
+		// Toggle 
+		$table = $this->Dupline_SetSingleOutputBit($address,"0001");
+		usleep($msecdelay * 1000);	// wait $msecdelay msec
+		$table = $this->Dupline_SetSingleOutputBit($address,"0000");
+		return true;
+	}
+	
+	/** 
+	 *
+	 */
 	private function ParseFullDuplineTable($packet){
 		$binstr = self::GetBitFromHex(implode("",$packet['frame']['register']));
 		$i=0;

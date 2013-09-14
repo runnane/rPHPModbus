@@ -216,8 +216,6 @@ class rPHPModbus {
 		return $this->_DoModbusFunction_Basic($slave_address, 5, $addr_hi, $addr_lo, $value_hi, $value_lo);
 	}
 	
-	
-	
 	/** 
 	 *
 	 */
