@@ -147,6 +147,16 @@ class rPHPDupline extends rPHPModbus {
 		$value = hexdec($hexresult);
 		return $value;
 	}
+	
+	/*
+	public function ReadFullDuplineOutputStatusTable(){
+		$packet = $al->DoModbusFunction_03ReadHoldingRegisters(1,"00","00","00","08");
+	}
+	
+	public function ReadFullDuplineOutputStatusTable(){
+		$packet = $al->DoModbusFunction_03ReadHoldingRegisters(1,"00","10","00","08");
+	}
+	*/
 	/*
 	public function DoButtonPress($function_id, $waittime=0.5){
 		if(!$function_id){
