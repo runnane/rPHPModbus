@@ -99,6 +99,29 @@ class rPHPDupline extends rPHPModbus {
 		$data = implode("",$result['frame']['register']);
 		return $result;
 	}
+	
+	public function DuplineByFunction_PresetMultipleRegisters($function_id, $number_of_registers, $param_number, $param_index, $register_value){
+		$function_id = str_pad(dechex($function_id), 4, "0", STR_PAD_LEFT);
+		$values[]  = $function_id;
+	
+		// byte 1+2
+		$register_address = "FF00";
+		
+		// byte 3
+		$param_number = str_pad(dechex($param_number), 2, "0", STR_PAD_LEFT);
+		$values[]  = $param_number;
+		
+		// byte 4
+		if($param_index !== NULL){
+			$param_index = str_pad(dechex($param_index), 2, "0", STR_PAD_LEFT);
+			$values[]  = $param_index;
+		}
+			
+		$packet = implode("",$values) . $register_value;
+		//echo "[Packet] register_address=[{$register_address}] function_id=[{$function_id}] param_number=[{$param_number}] param_index=[{$param_index}] register_value=[{$register_value}]\n";
+		//echo "         packet=[{$packet}]\n";
+		return $this->DoModbusFunction_16WriteMultipleRegisters(1, $register_address, strlen($register_value)/2, $packet);
+	}
 
 	/**
 	 * Get Dupline (Analink) temperature by function_id
@@ -135,6 +158,14 @@ class rPHPDupline extends rPHPModbus {
 		$value = hexdec($result)/10.0;
 		return $value;
 	}
+	
+	public function SetHeatingPointByFunctionId_BEWTEMDIS($function_id, $temperature, $energysaving = 0){
+		$temperature = str_pad(dechex(intval($temperature*10)), 8, "0", STR_PAD_LEFT);
+		$es = $energysaving ? "01" : "00";
+		$hexresult = $this->DuplineByFunction_PresetMultipleRegisters($function_id, 4, $es, "00", $temperature);
+		return true;
+	}
+
 	
 	/** 
 	 *
@@ -209,37 +240,11 @@ class rPHPDupline extends rPHPModbus {
 		return (ord(strtoupper($dupline_address{0}))-65)*8 + (((int)$dupline_address{1})-1);
 	}
 	
+	
 
-	/*
-	public function DuplineByFunction_PresetMultipleRegisters($function_id, $register_address, $number_of_registers, $parm_number, $parm_index, $register_value){
-		$byte_count = $number_of_registers*2;
-		$length = $byte_count;
-		$rest = $byte_count;
-		
-		$number_of_registers = str_pad(dechex($number_of_registers), 4, "0", STR_PAD_LEFT);
-		$byte_count = str_pad(dechex($byte_count), 2, "0", STR_PAD_LEFT);
-		$function_id = str_pad(dechex($function_id), 4, "0", STR_PAD_LEFT);
-		
-		// byte 1+2
-		$register_address = str_pad(dechex($register_address), 4, "0", STR_PAD_LEFT);
-		$rest -=2;
-		
-		// byte 3
-		$parm_number = str_pad(dechex($parm_number), 2, "0", STR_PAD_LEFT);
-		$rest -=1;
-		
-		// byte 4
-		if($parm_index !== NULL){
-			$parm_index = str_pad(dechex($parm_index), 2, "0", STR_PAD_LEFT);
-			$rest -=1;
-		}
-			
-		$register_value = str_pad(dechex($register_value), $rest*2, "0", STR_PAD_LEFT);
-		
-		if($this->_debug) echo "[Packet] register_address=[{$register_address}] number_of_registers=[{$number_of_registers}] byte_count=[{$byte_count}] function_id=[{$function_id}] parm_number=[{$parm_number}] parm_index=[{$parm_index}] register_value=[{$register_value}]\n";
-		$hexresult = $this->DoModbusQuery(1, 16, "{$register_address}{$number_of_registers}{$byte_count}{$function_id}{$parm_number}{$parm_index}{$register_value}");
-	}
-	*/
+	
+	
+
 
 	/*
 	*/
@@ -258,12 +263,6 @@ class rPHPDupline extends rPHPModbus {
 		return true;
 	}
 	
-	public function SetHeatingPoint($Sensor_Index, $temperature, $energysaving=0){
-		$sp = intval($temperature*10);
-		$es = $energysaving ? 0x1 : 0x0;
-		$hexresult = $this->DuplineByFunction_PresetMultipleRegisters($Sensor_Index, 65280, 0x4, $es, 0x0, $sp);
-		return true;
-	}
 	
 	public function SetFunctionBit($Sensor_Index, $parm1, $parm2, $value){
 		$hexresult = $this->DuplineByFunction_PresetMultipleRegisters($Sensor_Index, 65280, 0x2, $parm1, $parm2, $value);

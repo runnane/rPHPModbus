@@ -15,7 +15,7 @@ require_once("rPHPDupline.class.php");
 $al = new rPHPDupline("172.20.100.4");
 
 // Enable debugging
-$al->Debug(true);
+$al->Debug(false);
 
 // Connect
 $al->Connect();
@@ -62,10 +62,6 @@ $al->Connect();
 //$status = $al->GetBitValueByFunctionId(37);
 //echo "[ii] Function 37 has status {$status}\n\n";
 
-// Get Dupline (Analink) temperature by function_id from a BEW-TEMDIS based temperature control unit
-//$temperature = $al->GetTemperatureByFunctionId_BEWTEMDIS(11);
-//echo "[ii] Temperature in function 11 is {$temperature} C\n\n";
-
 // Get Dupline Output Status for addresses A1-08
 //$table = $al->ReadFullDuplineOutputStatusTable();
 //echo "[ii] Dupline Output Address A5 is {$table['A5']}\n\n";
@@ -85,6 +81,19 @@ $al->Connect();
 //echo "[ii] Dupline  Address I3 has register address offset '{$v}'\n\n";
 
 
+// Dupline (Analink) heating level (normal) by function_id from a BEW-TEMDIS based temperature control unit
+//$t = $al->SetHeatingPointByFunctionId_BEWTEMDIS(11, 21.0);
+
+// Dupline (Analink) heating level (power saving) by function_id from a BEW-TEMDIS based temperature control unit
+//$t = $al->SetHeatingPointByFunctionId_BEWTEMDIS(11, 20.5, true);
+
+// Get Dupline (Analink) temperature by function_id from a BEW-TEMDIS based temperature control unit
+//$temperature = $al->GetTermostatByFunctionId_BEWTEMDIS(11);
+//echo "[ii] Termostat normal in function 11 is {$temperature} C\n\n";
+
+// Get Dupline (Analink) temperature by function_id from a BEW-TEMDIS based temperature control unit
+//$temperature = $al->GetTermostatByFunctionId_BEWTEMDIS(11, true);
+//echo "[ii] Termostat powersave in function 11 is {$temperature} C\n\n";
 
 
 
@@ -111,8 +120,6 @@ $t = $al->DuplineByFunction_PresetMultipleRegisters(37, 65280, 2, 0, NULL, 1);
 // Open garage gate:  (function 47)
 $al->DoButtonPress(47);
 
-// Set heating level
-$t = $al->SetHeatingPoint(11, 20.0);
 
 usleep(500000); //500msec
 $t = $al->SetHeatingPoint(11, 20.0, true);

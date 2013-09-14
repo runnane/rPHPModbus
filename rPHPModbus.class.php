@@ -54,7 +54,7 @@ class rPHPModbus {
 	/** 
 	 * Array with which function codes we have implemented
 	 */	
-	private $_ImplementedModbusFunctionCodes = array(1, 2, 3, 5);
+	private $_ImplementedModbusFunctionCodes = array(1, 2, 3, 5, 16);
 	
 	/** 
 	 * Constructor
@@ -66,7 +66,6 @@ class rPHPModbus {
 		$_trid=0;
 		$this->_host = $host; 
 		$this->_port = $port;  
-		
 		
 		if (!extension_loaded('sockets')) {
 			if($this->_debug) echo "[--] rPHPModbus() cannot initialize, required sockets extension not loaded\n";
@@ -120,7 +119,6 @@ class rPHPModbus {
 		}else{
 			if($this->_debug) echo "[++] Successfully connected to host {$this->_host}\n";
 		}
-		
 	}
 	
 	/** 
@@ -145,7 +143,6 @@ class rPHPModbus {
 		$modbus_transaction_id = $this->_GetNextTransactionId();
 		$modbus_protocol_identifier = 0;
 		$payload = $this->_CreateModbusTCPPacket($modbus_transaction_id, $modbus_protocol_identifier, $modbus_unit_identifier, $modbus_function_code, $data);
-		//usleep($this->_waitusec);
 		$result_raw = $this->_DoModbusPoll($payload);
 		$result = $this->_ParseModbusResult($result_raw, $payload);
 		if($this->_debug) echo "[ii] ------------- Ending transaction -------------------\n";
@@ -222,11 +219,30 @@ class rPHPModbus {
 	private function _DoModbusFunction_Basic($slave_address, $function, $addr_hi, $addr_lo, $points_hi, $points_lo){
 		$payload = "{$addr_hi}{$addr_lo}{$points_hi}{$points_lo}";
 		if(strlen($payload) != 8){
-			throw new Exception("Malformed _DoModbusFunction_Basic() parm_number length, should be 8: length='".strlen($payload)."', data='{$payload}'");
+			throw new Exception("Malformed _DoModbusFunction_Basic() payload length, should be 8: length='".strlen($payload)."', data='{$payload}'");
 		}
 		return $this->DoModbusQuery($slave_address, $function, $payload);
 	}
-  
+
+
+	/** 
+	 *
+	 */
+	public function DoModbusFunction_16WriteMultipleRegisters($slave_address, $starting_address, $quantity_of_registers, $register_values){
+		$quantity = self::Convert10to16($quantity_of_registers,2);
+		$byte_count = self::Convert10to16($quantity_of_registers*2,1);
+		
+		$subheader = "{$starting_address}{$quantity}{$byte_count}";
+		$payload = "{$subheader}{$register_values}";
+		
+		if(strlen($subheader) != 10){
+			throw new Exception("Malformed DoModbusFunction_16WriteMultipleRegisters() subheader length, should be 10: length='".strlen($subheader)."', data='{$subheader}'");
+		}
+		if($this->_debug) echo "[++] slave_address='{$slave_address}', quantity='{$quantity}', byte_count='{$byte_count}', register_values='{$register_values}' \n";
+
+		return $this->DoModbusQuery($slave_address, 16, $payload);
+	}
+ 
 	/**
 	 * Do the actual socket send/recieve
 	 *
@@ -315,49 +331,61 @@ class rPHPModbus {
 	 */
 	private function _ParseModbusResult($result, $request){
 		$p = self::ConvertStrToHex($result);
-		$packet['header']['trid'] 						= substr($p,0,4);
-		$packet['header']['protoid'] 					= substr($p,4,4);
-		$packet['header']['remaining_bytes'] 	= substr($p,8,4);
 		
-		$packet['frame']['unit'] 							= substr($p,12,2);
-		$packet['frame']['function_code'] 		= substr($p,14,2);
+		$header = substr($p,0,12);
+		$frame = substr($p,12);
+		
+		if($this->_debug) echo "[ii] Got packet: header=[{$header}] frame=[{$frame}]\n";
+		$packet['header']['trid'] 						= substr($header,0,4);
+		$packet['header']['protoid'] 					= substr($header,4,4);
+		$packet['header']['remaining_bytes'] 	= substr($header,8,4);
+		
+		$packet['frame']['unit'] 							= substr($frame,0,2);
+		$packet['frame']['function_code'] 		= substr($frame,2,2);
+		
+		$modbus_function_code = hexdec($packet['frame']['function_code']);
 	
-		if(!in_array($packet['frame']['function_code'], $this->_ImplementedModbusFunctionCodes)){
+		if(!in_array($modbus_function_code, $this->_ImplementedModbusFunctionCodes)){
 			if($this->_debug) echo "[--] Modbus function code '{$modbus_function_code}' not implemented, aborting\n";
 			throw new Exception("Modbus function code '{$modbus_function_code}' not implemented, aborting");
 		}
-
 		
 		// TODO: Rewrite this for more effective/common parsing needs
-		switch(hexdec($packet['frame']['function_code'])){
+		switch($modbus_function_code){
 			
 			case 1:  // 01 Read Coil Status
-				$packet['frame']['byte_count'] 	= substr($p, 16, 2);
-				$to_parse 											= substr($p, 18);
+				$packet['frame']['byte_count'] 	= substr($frame, 4, 2);
+				$to_parse 											= substr($frame, 6);
 				$register_size 									= 2;
 			break;
 			
 			case 2:  // 02 Read Input Status
-				$packet['frame']['byte_count'] 	= substr($p, 16, 2);
-				$to_parse 											= substr($p, 18);
+				$packet['frame']['byte_count'] 	= substr($frame, 4, 2);
+				$to_parse 											= substr($frame, 6);
 				$register_size 									= 2;
 			break;
 			
 			case 3: // 03 Read Holding Registers
-				$packet['frame']['byte_count'] 	= substr($p, 16, 2);
-				$to_parse 											= substr($p, 18);
+				$packet['frame']['byte_count'] 	= substr($frame, 4, 2);
+				$to_parse 											= substr($frame, 6);
 				$register_size 									= 4;
 			break;
 			
 			case 5:  // 05 Write Single Coil
 				$packet['frame']['byte_count'] 	= 0;
-				$to_parse 											= substr($p, 16);
+				$to_parse 											= substr($frame, 4);
 				$register_size 									= 2;
+			break;
+
+			case 16:  // 16 Write Multiple Registers
+				$packet['frame']['byte_count'] 	= 0;
+				$to_parse 											= substr($frame, 4);
+				$register_size 									= 4;
 			break;
 			
 			default:
 				// THIS SHOULD NOT BE POSSIBLE WITH THIS APPROACH :(
-				throw new Exception("Cannot parse function_code '{$packet['frame']['function_code']}', NOT IMPLEMENTED!");
+				throw new Exception("Cannot parse function_code '{$modbus_function_code}', NOT IMPLEMENTED!");
 			break;
 		}
 		
