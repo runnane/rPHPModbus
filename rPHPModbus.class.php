@@ -52,6 +52,11 @@ class rPHPModbus {
 	//private $_waitusec = 0; // usecs to wait between payloads
 	
 	/** 
+	 * Array with which function codes we have implemented
+	 */	
+	private $_ImplementedModbusFunctionCodes = array(1, 2, 3);
+	
+	/** 
 	 * Constructor
 	 * 
 	 * @param string $host Host/IP to host
@@ -155,6 +160,11 @@ class rPHPModbus {
 	 */
 	private function _CreateModbusTCPPacket($transaction_id, $protocol_identifier, $unit_identifier, $modbus_function_code, $data){
 		$remaining_bytes = strlen($data)/2 + 2;
+		
+		if(!in_array($modbus_function_code, $this->_ImplementedModbusFunctionCodes)){
+			if($this->_debug) echo "[--] Modbus function code '{$modbus_function_code}' not implemented, aborting\n";
+			throw new Exception("Modbus function code '{$modbus_function_code}' not implemented, aborting");
+		}
 		
 		$hexbytecount = self::Convert10to16($remaining_bytes,2);
 		$protocol_identifier = self::Convert10to16($protocol_identifier);
@@ -318,31 +328,35 @@ class rPHPModbus {
 		
 		$to_parse = substr($p,18);
 		$packet['frame']['register'] = array();
+
+		if(!in_array($packet['frame']['function_code'], $this->_ImplementedModbusFunctionCodes)){
+			if($this->_debug) echo "[--] Modbus function code '{$modbus_function_code}' not implemented, aborting\n";
+			throw new Exception("Modbus function code '{$modbus_function_code}' not implemented, aborting");
+		}
 		
+		$register_size = 2;
+		// TODO: Rewrite this for more effective/common parsing needs
 		switch(hexdec($packet['frame']['function_code'])){
-			case 1: //01 Read Coil Status
-				while(strlen($to_parse)>1){
-					$packet['frame']['register'][] 			= substr($to_parse, 0, 2);
-					$to_parse= substr($to_parse, 2 );
-				}
-			break;
-			case 2: // 02 Read Input Status
-				while(strlen($to_parse)>1){
-					$packet['frame']['register'][] 			= substr($to_parse, 0, 2);
-					$to_parse= substr($to_parse, 2 );
-				}
+			case 1:  // 01 Read Coil Status
+			case 2:  // 02 Read Input Status
+			case 5:  // 05 Write Single Coil
+			case 15: // 15 Write Multiple Coils
+				$register_size = 2;
 			break;
 			case 3: // 03 Read Holding Registers
-				while(strlen($to_parse)>1){
-					$packet['frame']['register'][] 			= substr($to_parse, 0, 4);
-					$to_parse= substr($to_parse, 4 );
-				}
-			
+				$register_size = 4;
 			break;
 			default:
+				// THIS SHOULD NOT BE POSSIBLE WITH THIS APPROACH :(
 				throw new Exception("Cannot parse function_code '{$packet['frame']['function_code']}', NOT IMPLEMENTED!");
 			break;
 		}
+		
+		while(strlen($to_parse)>1){
+			$packet['frame']['register'][] 			= substr($to_parse, 0, $register_size);
+			$to_parse = substr($to_parse, $register_size);
+		}
+
 		
 		$datapacket = @implode("",$packet['frame']['register']);
 		if($this->_debug) echo "[++] Got Modbus Packet:\n";
