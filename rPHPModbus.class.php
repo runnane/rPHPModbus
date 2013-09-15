@@ -387,7 +387,8 @@ class rPHPModbus {
 		
 		$header = substr($p,0,12);
 		$frame = substr($p,12);
-		
+		$packet = array();
+                
 		if($this->_debug) echo "[ii] Got packet: header=[{$header}] frame=[{$frame}]\n";
 		$packet['header']['trid'] 		= substr($header,0,4);
 		$packet['header']['protoid'] 		= substr($header,4,4);
@@ -437,7 +438,7 @@ class rPHPModbus {
 			break;
 			
 			default:
-				// THIS SHOULD NOT BE POSSIBLE WITH THIS APPROACH :(
+                                // Functions for exceptions (0x81+) will get here until exception handling is implemented.
 				throw new Exception("Cannot parse function_code '{$modbus_function_code}', NOT IMPLEMENTED!");
 			break;
 		}

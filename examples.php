@@ -12,7 +12,6 @@
 // FOrmatting (<pre>)
 if(php_sapi_name() != 'cli') echo "<pre>";
 
-
 // We use the rPHPDupline class here since we want Dupline functions in addition
 // to "clean" Modbus functions.
 require_once("rPHPDupline.class.php");
@@ -29,8 +28,8 @@ $al->Connect();
 //////////////////////////////////////////////////////////
 
 // Get 1 coil status starting with address 0x0504 (Clean Modbus code)
-//$packet = $al->DoModbusFunction_01ReadCoilStatus(1,"05","04","00","01");
-//echo "[ii] Coil Status 0x0504 is {$packet['frame']['register'][0]}\n\n";
+$packet = $al->DoModbusFunction_01ReadCoilStatus(1,"05","04","00","01");
+echo "[ii] Coil Status 0x0504 is {$packet['frame']['register'][0]}\n\n";
 
 //////////////////////////////////////////////////////////
 // Example of 02 Read Input Status
