@@ -19,8 +19,8 @@
 	along with rPHPModbus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 class rPHPModbus {
+    
 	/** 
 	 * Last transaction id used
 	 */
@@ -36,7 +36,6 @@ class rPHPModbus {
 	 */	
 	private $_port;
 	
-	
 	/** 
 	 * Debug bool to toggle debug output
 	 */	
@@ -47,8 +46,19 @@ class rPHPModbus {
 	 */	
 	private $_socket;
 	
-	//private $_sec;
-	//private $_usec;
+        /**
+         *
+         * @var int Socket timeout, seconds
+         */
+	private $_sec;
+        
+        /**
+         *
+         * @var int Socket timeout, microseconds
+         */
+	private $_usec;
+        
+        
 	//private $_waitusec = 0; // usecs to wait between payloads
 	
 	/** 
@@ -63,7 +73,7 @@ class rPHPModbus {
 	 * @param int $port TCP-port to host (502 usually)
 	 */	
 	public function __construct($host, $port=502){
-		$_trid=0;
+		$this->_trid=0;
 		$this->_host = $host; 
 		$this->_port = $port;  
 		
@@ -71,8 +81,8 @@ class rPHPModbus {
 			if($this->_debug) echo "[--] rPHPModbus() cannot initialize, required sockets extension not loaded\n";
 			throw new Exception( "rPHPModbus() cannot initialize, required sockets extension not loaded" );
 		}
-		//$this->_sec = 30;
-		//$this->_usec = 30;
+		$this->_sec = 1;
+		$this->_usec = 500000;
 	}
 	
 	/** 
@@ -103,7 +113,7 @@ class rPHPModbus {
 		}
 
 		// Set timeout
-		$timeout = array( 'sec'=>1, 'usec'=>500000 );
+		$timeout = array( 'sec' => $this->_sec, 'usec' => $this->_usec );
 		if(!socket_set_option($this->_socket, SOL_SOCKET, SO_SNDTIMEO, $timeout)){
 			if($this->_debug) echo "[--] Connect() failed, unable to set timeoutoption on socket\n";
 			throw new Exception( "Connect() failed, unable to set timeoutoption on socket" );
@@ -438,19 +448,13 @@ class rPHPModbus {
 			$to_parse = substr($to_parse, $register_size);
 		}
 
-		
-		
-		
-
-
-
 		$datapacket = @implode("",$packet['frame']['register']);
 		
 		if($this->_debug) echo "[++] Got Modbus Packet:\n";
 		if($this->_debug) echo "   header:  TransactionIdentifier=[{$packet['header']['trid']}] ProtocolIdentifier=[{$packet['header']['protoid']}] RemainingBytes=[{$packet['header']['remaining_bytes']}]\n";
 		if($this->_debug) echo "   frame :  ByteCount=[{$packet['frame']['byte_count']}] UnitIdentifier=[{$packet['frame']['unit']}] FunctionCode=[{$packet['frame']['function_code']}]\n";
 		if($this->_debug) echo "            Data=[{$datapacket}]\n";
-		//print_r($packet);
+		
 		return $packet;
 	}
 
