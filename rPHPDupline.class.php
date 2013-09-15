@@ -331,6 +331,13 @@ class rPHPDupline extends rPHPModbus {
             return true;
 	}
         
+        /**
+         * 
+         * @param type $function_id
+         * @param type $msecdelay
+         * @return boolean
+         * @throws Exception
+         */
         public function ToggleDuplineFunctionOutput($function_id, $msecdelay=500){
             if(!$function_id){
                 throw new Exception("Missing functionId");
@@ -376,18 +383,5 @@ class rPHPDupline extends rPHPModbus {
 		return (ord(strtoupper($dupline_address{0}))-65)*8 + (((int)$dupline_address{1})-1);
 	}
 	
-	
-	
-	/*
-	
-	
-	
-	public function SetFunctionBit($Sensor_Index, $parm1, $parm2, $value){
-		$hexresult = $this->DuplineByFunction_PresetMultipleRegisters($Sensor_Index, 65280, 0x2, $parm1, $parm2, $value);
-		$value = hexdec($hexresult);
-		return $value;
-	}
-	*/
-
 }
 ?>

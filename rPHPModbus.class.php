@@ -447,19 +447,6 @@ class rPHPModbus {
 		if($this->_debug) echo "[++] Got next TransactionId: '0x{$trid_to_send}'\n";
 		return $trid_to_send;
 	}
-
-	/**
-	 * Convert result to Readable (not in use)
-	 *
-	 * @parm string $result
-	 * @return string
-	 */
-	private function _GetHexvalueFromModbusResult($result){
-		$raw = str_split(self::ConvertStrToHex($result),2);
-		if($this->_debug) echo "[->] ".self::ConvertStrToHex($result)."\n";
-		$hvalue = $raw[count($raw)-1];
-		return $hvalue;
-	}
 	
 	/**
 	 * Parse and qualitycheck the result
@@ -605,5 +592,4 @@ class rPHPModbus {
 	}
 
 }
-
 ?>

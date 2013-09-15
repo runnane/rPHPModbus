@@ -110,47 +110,10 @@ $al->Connect();
 
 //$al->DuplineByChannel_SetSingleOutputBit("A1",false);
 
-// Toggle LED fuction
+// Toggle LED function 55 (simulate button push to input)
 //$al->ToggleDuplineFunctionOutput(55);
-//
-// Dupline (Analink) heating level (normal) by function_id from a BEW-TEMDIS based temperature control unit
-//$al->SetHeatingPointByFunctionId_BEWTEMDIS(61, 21.0);
-//$al->SetHeatingPointByFunctionId_BEWTEMDIS(61, 20.5, true);
-
-
 
 $al->Disconnect();
-
-
-//////////////////////////////////////////////////////////
-// UNFINISHED TESTS
-//////////////////////////////////////////////////////////
-/*
-// Simulate a button push with specified delay on toggle.
-// Function number 47 (0x2f)
-$al->DoButtonPress(47,200);
-
-$t = $al->SetFunctionBit(38,1,0,1);
-$t = $al->SetFunctionBit(38,0,0,1);
-$t = $al->SetFunctionBit(48,0,0,1);
-
-$t = $al->DuplineByFunction_PresetMultipleRegisters(37, 65280, 2, 0, NULL, 1);
-
-
-// Open garage gate:  (function 47)
-$al->DoButtonPress(47);
-
-
-usleep(500000); //500msec
-$t = $al->SetHeatingPoint(11, 20.0, true);
-
-usleep(500000); //500msec
-$t = $al->GetTermostatNormal(11);
-
-usleep(500000); //500msec
-$t = $al->GetTermostatNormal(11,true);
-
-*/
 
 // Done, formatting
 if(php_sapi_name() != 'cli') echo "</pre>";
