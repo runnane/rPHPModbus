@@ -100,12 +100,11 @@ $al->Connect();
 //$data = $al->DoModbusFunction_43ReadDeviceIdentification(1, "4","0");
 //print_r($data);
 
-$output_enabled = $al->DuplineByChannel_GetOutputStatus("A5");
-if($output_enabled){
-    echo "Dupline Output Channel A1 is HIGH\n";
-}else{
-    echo "Dupline Output Channel A1 is LOW\n";
-}
+//$output_enabled = $al->DuplineByChannel_GetOutputStatus("A5");
+//echo "Dupline Output Channel A5 is " . ($output_enabled ? "HIGH" : "LOW" ). "\n";
+
+$input_enabled = $al->DuplineByChannel_GetInputStatus("A1");
+echo "Dupline input Channel A1 is " . ($input_enabled ? "HIGH" : "LOW") . "\n";
 
 
 
