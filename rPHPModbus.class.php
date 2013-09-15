@@ -64,7 +64,7 @@ class rPHPModbus {
 	/** 
 	 * Array with which function codes we have implemented
 	 */	
-	private $_ImplementedModbusFunctionCodes = array(1, 2, 3, 5, 16);
+	private $_ImplementedModbusFunctionCodes = array(1, 2, 3, 4, 5, 6, 16);
 	
 	/** 
 	 * Constructor
@@ -239,6 +239,18 @@ class rPHPModbus {
 		return $this->_DoModbusFunction_Basic($slave_address, 3, $addr_hi, $addr_lo, $points_hi, $points_lo);
 	}
 	
+        /**
+         * 
+         * @param type $slave_address
+         * @param type $addr_hi
+         * @param type $addr_lo
+         * @param type $points_hi
+         * @param type $points_lo
+         * @return type
+         */
+        public function DoModbusFunction_04ReadInputRegisters($slave_address, $addr_hi, $addr_lo, $points_hi, $points_lo){
+		return $this->_DoModbusFunction_Basic($slave_address, 4, $addr_hi, $addr_lo, $points_hi, $points_lo);
+	}
 	/**
          * 
          * @param type $slave_address
@@ -251,7 +263,21 @@ class rPHPModbus {
 	public function DoModbusFunction_05WriteSingleCoil($slave_address, $addr_hi, $addr_lo, $value_hi, $value_lo){
 		return $this->_DoModbusFunction_Basic($slave_address, 5, $addr_hi, $addr_lo, $value_hi, $value_lo);
 	}
-	
+
+        /**
+         * 
+         * @param type $slave_address
+         * @param type $addr_hi
+         * @param type $addr_lo
+         * @param type $value_hi
+         * @param type $value_lo
+         * @return type
+         */
+        public function DoModbusFunction_06WriteSingleRegister($slave_address, $addr_hi, $addr_lo, $value_hi, $value_lo){
+            return $this->_DoModbusFunction_Basic($slave_address, 6, $addr_hi, $addr_lo, $value_hi, $value_lo);
+	}
+
+        
 	/**
          * 
          * @param type $slave_address
@@ -424,8 +450,20 @@ class rPHPModbus {
 				$to_parse 			= substr($frame, 6);
 				$register_size 			= 4;
 			break;
-			
+                    
+			case 4: // 04 Read Input Registers
+				$packet['frame']['byte_count'] 	= substr($frame, 4, 2);
+				$to_parse 			= substr($frame, 6);
+				$register_size 			= 4;
+			break;
+                    
 			case 5:  // 05 Write Single Coil
+				$packet['frame']['byte_count'] 	= 0;
+				$to_parse 			= substr($frame, 4);
+				$register_size 			= 2;
+			break;
+                    
+                        case 6:  // 06 Write Single Register
 				$packet['frame']['byte_count'] 	= 0;
 				$to_parse 			= substr($frame, 4);
 				$register_size 			= 2;
