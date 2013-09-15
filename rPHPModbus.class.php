@@ -19,7 +19,6 @@
 	along with rPHPModbus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use Exception;
 class rPHPModbus {
     
 	/** 
@@ -258,6 +257,7 @@ class rPHPModbus {
         public function DoModbusFunction_04ReadInputRegisters($slave_address, $addr_hi, $addr_lo, $points_hi, $points_lo){
 		return $this->_DoModbusFunction_Basic($slave_address, 4, $addr_hi, $addr_lo, $points_hi, $points_lo);
 	}
+        
 	/**
          * Modbus function 5 (0x05) Write Single Coil
          * 
@@ -321,7 +321,7 @@ class rPHPModbus {
 	} 
         
         /**
-         * Modbus function 22 (0x16) Mask Write Register
+         * Modbus function 22 (0x16) Mask Write Register (NOT IMPLEMENTED)
          * 
          * @throws Exception
          */
@@ -330,7 +330,7 @@ class rPHPModbus {
 	}
         
         /**
-         * Modbus function 23 (0x17) Read/Write Multiple Registers
+         * Modbus function 23 (0x17) Read/Write Multiple Registers (NOT IMPLEMENTED)
          * 
          * @throws Exception
          */

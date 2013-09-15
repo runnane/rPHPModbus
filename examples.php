@@ -74,7 +74,7 @@ $al->Connect();
 //echo "[ii] Dupline Input Address A2 is {$table['A2']}\n\n";
 
 // Set Dupline Adress A1 to 1
-//$al->Dupline_SetSingleOutputBit("A1","0001");
+//$al->DuplineByChannel_SetSingleOutputBit("A1","0001");
 		
 // Simulate (buttonpress) on A1 (100msec seems like the fastest possible toggle)
 //$al->ToggleDuplineOutputChannel("A1",200);
@@ -99,6 +99,14 @@ $al->Connect();
 
 //$data = $al->DoModbusFunction_43ReadDeviceIdentification(1, "4","0");
 //print_r($data);
+
+$output_enabled = $al->DuplineByChannel_GetOutputStatus("A5");
+if($output_enabled){
+    echo "Dupline Output Channel A1 is HIGH\n";
+}else{
+    echo "Dupline Output Channel A1 is LOW\n";
+}
+
 
 
 

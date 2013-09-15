@@ -23,7 +23,7 @@
 */
 
 require_once("rPHPModbus.class.php");
-use rPHPModbus;
+
 class rPHPDupline extends rPHPModbus {
 	
 	/**
@@ -36,6 +36,10 @@ class rPHPDupline extends rPHPModbus {
 		parent::__construct($host, $port); 
 	} 
 
+        /****************************************************************/
+        /****** Do actions by Dupline functions                **********/
+        /****************************************************************/
+        
 	/**
          *  Get output status of a Dupline function, wrapper for 01 Read Coil Status modbus function 
          * 
@@ -102,28 +106,6 @@ class rPHPDupline extends rPHPModbus {
 		return $data;
 	}
 	
-	/**
-         * Set bitvalue of a Dupline channel, wrapper for 05 Write Single Coil
-         * 
-         * @param type $duplineaddr
-         * @param type $data
-         * @return type
-         */
-	public function Dupline_SetSingleOutputBit($duplineaddr, $data){
-		$dupline_start_addr = 5376;	// From "Smart-House  Modbus Protocol.pdf", section 5.4
-		
-		$register_address = self::Convert10to16($dupline_start_addr + $this->GetRegisterAddressOffsetByDuplineAddress($duplineaddr), 2);
-
-		$addr_hi 	= substr($register_address,0,2);
-		$addr_lo 	= substr($register_address,2,2);
-		$points_hi 	= substr($data,0,2);
-		$points_lo 	= substr($data,2,2);
-		
-		$result         = $this->DoModbusFunction_05WriteSingleCoil(1, $addr_hi, $addr_lo, $points_hi, $points_lo);
-		$data           = implode("",$result['frame']['register']);
-		return $result;
-	}
-	
         /**
          * Set value of a Dupline function, wrapper for 16 Write Multiple Registers modbus function 
          * 
@@ -156,6 +138,54 @@ class rPHPDupline extends rPHPModbus {
 		//echo "         packet=[{$packet}]\n";
 		return $this->DoModbusFunction_16WriteMultipleRegisters(1, $register_address, strlen($register_value)/2, $packet);
 	}
+        
+        /****************************************************************/
+        /****** Do actions by Dupline channels                 **********/
+        /****************************************************************/
+        
+	/**
+         * Set bitvalue of a Dupline channel, wrapper for 05 Write Single Coil
+         * 
+         * @param type $dupline_channel_address
+         * @param type $data
+         * @return type
+         */
+	public function DuplineByChannel_SetSingleOutputBit($dupline_channel_address, $data){
+		$dupline_start_addr = 5376;	// From "Smart-House  Modbus Protocol.pdf", section 5.4
+		
+		$register_address = self::Convert10to16($dupline_start_addr + $this->GetRegisterAddressOffsetByDuplineAddress($dupline_channel_address), 2);
+
+		$addr_hi 	= substr($register_address,0,2);
+		$addr_lo 	= substr($register_address,2,2);
+		$points_hi 	= substr($data,0,2);
+		$points_lo 	= substr($data,2,2);
+		
+		$result         = $this->DoModbusFunction_05WriteSingleCoil(1, $addr_hi, $addr_lo, $points_hi, $points_lo);
+		$data           = implode("",$result['frame']['register']);
+		return $data;
+	}
+	
+        /**
+         * Set bitvalue of a Dupline channel, wrapper for 01 Read Coil Status
+         * 
+         * @param type $dupline_channel_address
+         * @return type
+         */
+        public function DuplineByChannel_GetOutputStatus($dupline_channel_address){
+ 		$dupline_start_addr = 1280;	// From "Smart-House  Modbus Protocol.pdf", section 5.1
+  		$register_address = self::Convert10to16($dupline_start_addr + $this->GetRegisterAddressOffsetByDuplineAddress($dupline_channel_address), 2);
+                
+                $addr_hi 	= substr($register_address,0,2);
+		$addr_lo 	= substr($register_address,2,2);
+		
+                $points_hi      = self::Convert10to16(0,1);
+                $points_lo      = self::Convert10to16(1,1);
+                
+		$result         = $this->DoModbusFunction_01ReadCoilStatus(1, $addr_hi, $addr_lo, $points_hi, $points_lo);
+		$data           = implode("",$result['frame']['register']);
+		return $data=="01";
+        }
+   
 
         /****************************************************************/
         /****** Specific functions for Dupline units/functions **********/
