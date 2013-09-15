@@ -79,14 +79,15 @@ class rPHPModbus {
 	 * Enables/disables debug output
 	 * 
 	 * @param bool $enabled Debug enabled
-	 */	
+	 */
 	public function Debug($enabled){
 		$this->_debug=$enabled;
 	}
-	
-	/** 
-	 * Connects the socket to specified host
-	 */	
+		
+        /**
+         * Connects the socket to specified host
+         * @throws Exception
+         */
 	public function Connect(){
 		// Error checking
 		if(!$this->_host ||  !$this->_port){
@@ -149,12 +150,16 @@ class rPHPModbus {
 		return $result;
 	}
 
-	/** 
-	 *
-	 *
-	 *
-	 *
-	 */
+	/**
+         * 
+         * @param type $transaction_id
+         * @param type $protocol_identifier
+         * @param type $unit_identifier
+         * @param type $modbus_function_code
+         * @param type $data
+         * @return type
+         * @throws Exception
+         */
 	private function _CreateModbusTCPPacket($transaction_id, $protocol_identifier, $unit_identifier, $modbus_function_code, $data){
 		$remaining_bytes = strlen($data)/2 + 2;
 		
@@ -185,49 +190,86 @@ class rPHPModbus {
 	}
 
 	
-	/** 
-	 *
-	 */
+	/**
+         * 
+         * @param type $slave_address
+         * @param type $addr_hi
+         * @param type $addr_lo
+         * @param type $points_hi
+         * @param type $points_lo
+         * @return type
+         */
 	public function DoModbusFunction_01ReadCoilStatus($slave_address, $addr_hi, $addr_lo, $points_hi, $points_lo){
 		return $this->_DoModbusFunction_Basic($slave_address, 1, $addr_hi, $addr_lo, $points_hi, $points_lo);
 	}
 	
-	/** 
-	 *
-	 */
+	/**
+         * 
+         * @param type $slave_address
+         * @param type $addr_hi
+         * @param type $addr_lo
+         * @param type $points_hi
+         * @param type $points_lo
+         * @return type
+         */
 	public function DoModbusFunction_02ReadInputStatus($slave_address, $addr_hi, $addr_lo, $points_hi, $points_lo){
 		return $this->_DoModbusFunction_Basic($slave_address, 2, $addr_hi, $addr_lo, $points_hi, $points_lo);
 	}
 	
-	/** 
-	 *
-	 */
+	/**
+         * 
+         * @param type $slave_address
+         * @param type $addr_hi
+         * @param type $addr_lo
+         * @param type $points_hi
+         * @param type $points_lo
+         * @return type
+         */
 	public function DoModbusFunction_03ReadHoldingRegisters($slave_address, $addr_hi, $addr_lo, $points_hi, $points_lo){
 		return $this->_DoModbusFunction_Basic($slave_address, 3, $addr_hi, $addr_lo, $points_hi, $points_lo);
 	}
 	
-	/** 
-	 *
-	 */
+	/**
+         * 
+         * @param type $slave_address
+         * @param type $addr_hi
+         * @param type $addr_lo
+         * @param type $value_hi
+         * @param type $value_lo
+         * @return type
+         */
 	public function DoModbusFunction_05WriteSingleCoil($slave_address, $addr_hi, $addr_lo, $value_hi, $value_lo){
 		return $this->_DoModbusFunction_Basic($slave_address, 5, $addr_hi, $addr_lo, $value_hi, $value_lo);
 	}
 	
-	/** 
-	 *
-	 */
+	/**
+         * 
+         * @param type $slave_address
+         * @param type $function
+         * @param type $addr_hi
+         * @param type $addr_lo
+         * @param type $points_hi
+         * @param type $points_lo
+         * @return type
+         * @throws Exception
+         */
 	private function _DoModbusFunction_Basic($slave_address, $function, $addr_hi, $addr_lo, $points_hi, $points_lo){
 		$payload = "{$addr_hi}{$addr_lo}{$points_hi}{$points_lo}";
 		if(strlen($payload) != 8){
 			throw new Exception("Malformed _DoModbusFunction_Basic() payload length, should be 8: length='".strlen($payload)."', data='{$payload}'");
 		}
 		return $this->DoModbusQuery($slave_address, $function, $payload);
-	}
+        }
 
-
-	/** 
-	 *
-	 */
+	/**
+         * 
+         * @param type $slave_address
+         * @param type $starting_address
+         * @param type $quantity_of_registers
+         * @param type $register_values
+         * @return type
+         * @throws Exception
+         */
 	public function DoModbusFunction_16WriteMultipleRegisters($slave_address, $starting_address, $quantity_of_registers, $register_values){
 		$quantity = self::Convert10to16($quantity_of_registers,2);
 		$byte_count = self::Convert10to16($quantity_of_registers*2,1);
@@ -243,12 +285,13 @@ class rPHPModbus {
 		return $this->DoModbusQuery($slave_address, 16, $payload);
 	}
  
-	/**
-	 * Do the actual socket send/recieve
-	 *
-	 * @parm string $request the requestpackage, raw
-	 * @return Raw returnpacket
-	 */
+        /**
+         * Do the actual socket send/recieve
+         * 
+         * @param type $request the requestpackage, raw
+         * @return type
+         * @throws Exception
+         */
 	private function _DoModbusPoll($request){
 		if($this->_debug) echo "[ii] Sending packet .... \n";
 		
@@ -440,9 +483,10 @@ class rPHPModbus {
 	}
 
 	/**
-	 *
-	 *
-	 */	
+         * 
+         * @param type $input
+         * @return type
+         */	
 	public static function GetBitFromHex($input){
 		$parts = str_split($input);
 		$ret = "";

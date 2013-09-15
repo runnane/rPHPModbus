@@ -26,16 +26,22 @@ require_once("rPHPModbus.class.php");
 
 class rPHPDupline extends rPHPModbus {
 	
-	/** 
-	 *
-	 */
+	/**
+         * 
+         * @param type $host
+         * @param type $port
+         */
 	public function __construct($host, $port=502) { 
 		parent::__construct($host, $port); 
 	} 
 
-	/** 
-	 *
-	 */
+	/**
+         * 
+         * @param type $function_id
+         * @param type $param_number
+         * @param type $param_index
+         * @return type
+         */
 	public function DuplineByFunction_ReadOutputStatus($function_id, $param_number, $param_index){
 		$param				= "{$param_number}{$param_index}";
 		$function_id	= self::Convert10to16($function_id, 2);
@@ -50,9 +56,13 @@ class rPHPDupline extends rPHPModbus {
 		return $data;
 	}
 	
-	/** 
-	 *
-	 */
+	/**
+         * 
+         * @param type $function_id
+         * @param type $param_number
+         * @param type $param_index
+         * @return type
+         */
 	public function DuplineByFunction_ReadValue($function_id, $param_number, $param_index){
 		$param 				= "{$param_number}{$param_index}";
 		$function_id 	= self::Convert10to16($function_id, 2);
@@ -66,9 +76,13 @@ class rPHPDupline extends rPHPModbus {
 		return $data;
 	}
 	
-	/** 
-	 *
-	 */
+	/**
+         * 
+         * @param type $function_id
+         * @param type $param_number
+         * @param type $param_index
+         * @return type
+         */
 	public function DuplineByFunction_ReadMultipleRegisters($function_id, $param_number, $param_index){
 		$param 				= "{$param_number}{$param_index}";
 		$function_id 	= self::Convert10to16($function_id, 2);
@@ -83,13 +97,18 @@ class rPHPDupline extends rPHPModbus {
 		return $data;
 	}
 	
-	/** 
-	 *
-	 */
+	/**
+         * 
+         * @param type $duplineaddr
+         * @param type $data
+         * @return type
+         */
 	public function Dupline_SetSingleOutputBit($duplineaddr, $data){
+		$dupline_start_addr = 5376;	// From "Smart-House  Modbus Protocol.pdf", section 5.4
 		
-		$register_address = 1500 + $this->GetRegisterAddressOffsetByDuplineAddress($duplineaddr);
-		
+		$register_address = $dupline_start_addr + $this->GetRegisterAddressOffsetByDuplineAddress($duplineaddr);
+		$register_address 	= self::Convert10to16($register_address, 2);
+
 		$addr_hi 		= substr($register_address,0,2);
 		$addr_lo 		= substr($register_address,2,2);
 		$points_hi 	= substr($data,0,2);
@@ -100,8 +119,17 @@ class rPHPDupline extends rPHPModbus {
 		return $result;
 	}
 	
+        /**
+         * 
+         * @param type $function_id
+         * @param type $number_of_registers
+         * @param type $param_number
+         * @param type $param_index
+         * @param type $register_value
+         * @return type
+         */
 	public function DuplineByFunction_PresetMultipleRegisters($function_id, $number_of_registers, $param_number, $param_index, $register_value){
-		$function_id = str_pad(dechex($function_id), 4, "0", STR_PAD_LEFT);
+		$function_id 	= self::Convert10to16($function_id, 2);
 		$values[]  = $function_id;
 	
 		// byte 1+2
@@ -128,7 +156,6 @@ class rPHPDupline extends rPHPModbus {
 	 * Tested with BEW-TEMDIS (ELKO Temperature Controller)
 	 * 
 	 * @param int $function_id Decimal function number of the Temperature function
-	 * 
 	 * @return float The current temperature for the BEW-TEMDIS
 	 */
 	public function GetTemperatureByFunctionId_BEWTEMDIS($function_id){
@@ -148,7 +175,6 @@ class rPHPDupline extends rPHPModbus {
 	 * Tested with BEW-TEMDIS (ELKO Temperature Controller)
 	 * 
 	 * @param int $function_id Decimal function number of the Temperature function
-	 * 
 	 * @return float The current temperature for the BEW-TEMDIS
 	 */
 	public function GetTermostatByFunctionId_BEWTEMDIS($function_id, $energysaving=false){
@@ -159,6 +185,13 @@ class rPHPDupline extends rPHPModbus {
 		return $value;
 	}
 	
+        /**
+         * 
+         * @param type $function_id
+         * @param type $temperature
+         * @param type $energysaving
+         * @return boolean
+         */
 	public function SetHeatingPointByFunctionId_BEWTEMDIS($function_id, $temperature, $energysaving = 0){
 		$temperature = str_pad(dechex(intval($temperature*10)), 8, "0", STR_PAD_LEFT);
 		$es = $energysaving ? "01" : "00";
@@ -167,9 +200,12 @@ class rPHPDupline extends rPHPModbus {
 	}
 
 	
-	/** 
-	 *
-	 */
+	/**
+         * 
+         * @param type $function_id
+         * @return type
+         * @throws Exception
+         */
 	public function GetBitValueByFunctionId($function_id){
 		if(!$function_id){			throw new Exception("Missing functionId");		}
 		$hexresult = $this->DuplineByFunction_ReadOutputStatus($function_id, 0, 0);
@@ -177,39 +213,48 @@ class rPHPDupline extends rPHPModbus {
 		return $value;
 	}
 
-	/** 
-	 *
-	 */
+	/**
+         * 
+         * @return type
+         */
 	public function ReadFullDuplineOutputStatusTable(){
 		$packet = $this->DoModbusFunction_03ReadHoldingRegisters(1,"00","00","00","08");
 		return $this->ParseFullDuplineTable($packet);
 	}
 
-	/** 
-	 *
-	 */
+	/**
+         * 
+         * @return type
+         */
 	public function ReadFullDuplineInputStatusTable(){
 		$packet = $this->DoModbusFunction_03ReadHoldingRegisters(1,"00","10","00","08");
 		return $this->ParseFullDuplineTable($packet);
 	}
 	
-	/** 
-	 *
-	 */
+	/**
+         * 
+         * @param type $dupline_address
+         * @param type $msecdelay
+         * @return boolean
+         * @throws Exception
+         */
 	public function ToggleDuplineOutputChannel($dupline_address, $msecdelay=500){
 		if(!$dupline_address){
 			throw new Exception("Missing dupline address");
 		}
 		// Toggle 
-		$table = $this->Dupline_SetSingleOutputBit($dupline_address, "0001");
+		$this->Dupline_SetSingleOutputBit($dupline_address, "0001");
 		usleep($msecdelay * 1000);	// wait $msecdelay msec
-		$table = $this->Dupline_SetSingleOutputBit($dupline_address, "0000");
+		$this->Dupline_SetSingleOutputBit($dupline_address, "0000");
 		return true;
 	}
 	
-	/** 
-	 *
-	 */
+	
+	/**
+         * 
+         * @param type $packet
+         * @return type
+         */
 	private function ParseFullDuplineTable($packet){
 		$binstr = self::GetBitFromHex(implode("",$packet['frame']['register']));
 		$i=0;
@@ -239,15 +284,6 @@ class rPHPDupline extends rPHPModbus {
 	public function GetRegisterAddressOffsetByDuplineAddress($dupline_address){
 		return (ord(strtoupper($dupline_address{0}))-65)*8 + (((int)$dupline_address{1})-1);
 	}
-	
-	
-
-	
-	
-
-
-	/*
-	*/
 	
 	
 	
