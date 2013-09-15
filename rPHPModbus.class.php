@@ -19,6 +19,7 @@
 	along with rPHPModbus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use Exception;
 class rPHPModbus {
     
 	/** 
@@ -64,7 +65,7 @@ class rPHPModbus {
 	/** 
 	 * Array with which function codes we have implemented
 	 */	
-	private $_ImplementedModbusFunctionCodes = array(1, 2, 3, 4, 5, 6, 16);
+	private $_ImplementedModbusFunctionCodes = array(1, 2, 3, 4, 5, 6, 16, 43);
 	
 	/** 
 	 * Constructor
@@ -180,27 +181,30 @@ class rPHPModbus {
 		
 		$hexbytecount = self::Convert10to16($remaining_bytes,2);
 		$protocol_identifier = self::Convert10to16($protocol_identifier);
-		$unit_identifier = self::Convert10to16($unit_identifier,1);
-		$modbus_function_code = self::Convert10to16($modbus_function_code,1);
-
+                $unit_identifier = self::Convert10to16($unit_identifier,1);
+                $modbus_function_code = self::Convert10to16($modbus_function_code,1);
+                
 		if($this->_debug) echo "[++] Creating Modbus Packet:\n";
 		if($this->_debug) echo "   header: TransactionIdentifier=[{$transaction_id}] ProtocolIdentifier=[{$protocol_identifier}] RemainingBytes=[{$hexbytecount}]\n";
-		if($this->_debug) echo "   frame : UnitIdentifier=[{$unit_identifier}] FunctionCode=[{$modbus_function_code}]\n";
+		if($this->_debug) echo "   frame : UnitIdentifier=[{$unit_identifier}]\n";
+                if($this->_debug) echo "           FunctionCode=[{$modbus_function_code}]\n";
 		if($this->_debug) echo "           Data=[{$data}]\n";
 		
 		$header = "{$transaction_id}{$protocol_identifier}{$hexbytecount}{$unit_identifier}{$modbus_function_code}";
 		
+                /*
 		if(strlen($header) != 16){
 			if($this->_debug) echo "[--] Malformed Modbus TCP Frame Header length, should be 16: length='".strlen($header)."', data='{$header}'\n";
 			throw new Exception("Malformed Modbus TCP Frame Header length, should be 16: length='".strlen($header)."', data='{$header}'");
 		}
-		
+		*/
 		$packet = pack("H*","{$header}{$data}");
 		return $packet;
 	}
 
 	
 	/**
+         * Modbus function 1 (0x01) Read Coil Status
          * 
          * @param type $slave_address
          * @param type $addr_hi
@@ -214,6 +218,7 @@ class rPHPModbus {
 	}
 	
 	/**
+         * Modbus function 2 (0x02) Read Input Status
          * 
          * @param type $slave_address
          * @param type $addr_hi
@@ -227,6 +232,7 @@ class rPHPModbus {
 	}
 	
 	/**
+         * Modbus function 3 (0x03) Read Holding Registers
          * 
          * @param type $slave_address
          * @param type $addr_hi
@@ -240,6 +246,7 @@ class rPHPModbus {
 	}
 	
         /**
+         * Modbus function 4 (0x04) Read Input Registers
          * 
          * @param type $slave_address
          * @param type $addr_hi
@@ -252,6 +259,7 @@ class rPHPModbus {
 		return $this->_DoModbusFunction_Basic($slave_address, 4, $addr_hi, $addr_lo, $points_hi, $points_lo);
 	}
 	/**
+         * Modbus function 5 (0x05) Write Single Coil
          * 
          * @param type $slave_address
          * @param type $addr_hi
@@ -265,6 +273,7 @@ class rPHPModbus {
 	}
 
         /**
+         * Modbus function 6 (0x06) Write Single Register
          * 
          * @param type $slave_address
          * @param type $addr_hi
@@ -277,27 +286,17 @@ class rPHPModbus {
             return $this->_DoModbusFunction_Basic($slave_address, 6, $addr_hi, $addr_lo, $value_hi, $value_lo);
 	}
 
-        
-	/**
+        /**
+         * Modbus function 15 (0x0f) Write Multiple Coils (NOT IMPLEMENTED)
          * 
-         * @param type $slave_address
-         * @param type $function
-         * @param type $addr_hi
-         * @param type $addr_lo
-         * @param type $points_hi
-         * @param type $points_lo
-         * @return type
          * @throws Exception
          */
-	private function _DoModbusFunction_Basic($slave_address, $function, $addr_hi, $addr_lo, $points_hi, $points_lo){
-		$payload = "{$addr_hi}{$addr_lo}{$points_hi}{$points_lo}";
-		if(strlen($payload) != 8){
-			throw new Exception("Malformed _DoModbusFunction_Basic() payload length, should be 8: length='".strlen($payload)."', data='{$payload}'");
-		}
-		return $this->DoModbusQuery($slave_address, $function, $payload);
+        public function DoModbusFunction_15WriteMultipleCoils(){
+            throw new Exception("NOT IMPLEMENTED");
         }
-
+        
 	/**
+         * Modbus function 16 (0x10) Write Multiple Registers
          * 
          * @param type $slave_address
          * @param type $starting_address
@@ -319,7 +318,68 @@ class rPHPModbus {
 		if($this->_debug) echo "[++] slave_address='{$slave_address}', quantity='{$quantity}', byte_count='{$byte_count}', register_values='{$register_values}' \n";
 
 		return $this->DoModbusQuery($slave_address, 16, $payload);
+	} 
+        
+        /**
+         * Modbus function 22 (0x16) Mask Write Register
+         * 
+         * @throws Exception
+         */
+        public function DoModbusFunction_22MaskWriteRegister(){
+             throw new Exception("NOT IMPLEMENTED");
 	}
+        
+        /**
+         * Modbus function 23 (0x17) Read/Write Multiple Registers
+         * 
+         * @throws Exception
+         */
+        public function DoModbusFunction_23ReadWRiteMultipleRegisters(){
+             throw new Exception("NOT IMPLEMENTED");
+	}
+        
+        /**
+         * 
+         * @param type $device_id_code
+         * @param type $object_id
+         * @return type
+         * @throws Exception
+         */
+        public function DoModbusFunction_43ReadDeviceIdentification($slave_address, $device_id_code, $object_id){
+  		$mei_type = "0e";
+ 		$dev_id = self::Convert10to16($device_id_code,1);
+		$obj_id = self::Convert10to16($object_id,1);
+		
+		$payload = "{$mei_type}{$dev_id}{$obj_id}";
+		
+		if(strlen($payload) != 6){
+			throw new Exception("Malformed DoModbusFunction_43ReadDeviceIdentification() payload length, should be 6: length='".strlen($payload)."', data='{$payload}'");
+		}
+                
+		if($this->_debug) echo "[++] mei_type='{$mei_type}', dev_id='{$dev_id}', obj_id='{$obj_id}' \n";
+
+		return $this->DoModbusQuery($slave_address, 43, $payload);
+	}
+       
+        /**
+         * Base method for modbus functions 1-6 that uses 2x2 byte data sets (addr hi/lo + content hi/lo)
+         * 
+         * @param type $slave_address
+         * @param type $function
+         * @param type $addr_hi
+         * @param type $addr_lo
+         * @param type $points_hi
+         * @param type $points_lo
+         * @return type
+         * @throws Exception
+         */
+	private function _DoModbusFunction_Basic($slave_address, $function, $addr_hi, $addr_lo, $points_hi, $points_lo){
+		$payload = "{$addr_hi}{$addr_lo}{$points_hi}{$points_lo}";
+		if(strlen($payload) != 8){
+			throw new Exception("Malformed _DoModbusFunction_Basic() payload length, should be 8: length='".strlen($payload)."', data='{$payload}'");
+		}
+		return $this->DoModbusQuery($slave_address, $function, $payload);
+        }
  
         /**
          * Do the actual socket send/recieve
@@ -473,6 +533,11 @@ class rPHPModbus {
 				$packet['frame']['byte_count'] 	= 0;
 				$to_parse 			= substr($frame, 4);
 				$register_size 			= 4;
+			break;
+                        case 43:  // 43 Read Device Identification
+				$packet['frame']['byte_count'] 	= 0;
+				$to_parse 			= substr($frame, 2);
+				$register_size 			= 2;
 			break;
 			
 			default:

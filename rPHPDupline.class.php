@@ -23,7 +23,7 @@
 */
 
 require_once("rPHPModbus.class.php");
-
+use rPHPModbus;
 class rPHPDupline extends rPHPModbus {
 	
 	/**

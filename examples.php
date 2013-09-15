@@ -28,8 +28,8 @@ $al->Connect();
 //////////////////////////////////////////////////////////
 
 // Get 1 coil status starting with address 0x0504 (Clean Modbus code)
-$packet = $al->DoModbusFunction_01ReadCoilStatus(1,"05","04","00","01");
-echo "[ii] Coil Status 0x0504 is {$packet['frame']['register'][0]}\n\n";
+//$packet = $al->DoModbusFunction_01ReadCoilStatus(1,"05","04","00","01");
+//echo "[ii] Coil Status 0x0504 is {$packet['frame']['register'][0]}\n\n";
 
 //////////////////////////////////////////////////////////
 // Example of 02 Read Input Status
@@ -97,7 +97,8 @@ echo "[ii] Coil Status 0x0504 is {$packet['frame']['register'][0]}\n\n";
 //$temperature = $al->GetTermostatByFunctionId_BEWTEMDIS(11, true);
 //echo "[ii] Termostat powersave in function 11 is {$temperature} C\n\n";
 
-
+//$data = $al->DoModbusFunction_43ReadDeviceIdentification(1, "4","0");
+//print_r($data);
 
 
 
