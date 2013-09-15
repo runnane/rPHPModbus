@@ -9,13 +9,17 @@
 	
 */
 
+// FOrmatting (<pre>)
+if(php_sapi_name() != 'cli') echo "<pre>";
+
+
 // We use the rPHPDupline class here since we want Dupline functions in addition
 // to "clean" Modbus functions.
 require_once("rPHPDupline.class.php");
 $al = new rPHPDupline("172.20.100.4");
 
 // Enable debugging
-$al->Debug(false);
+$al->Debug(TRUE);
 
 // Connect
 $al->Connect();
@@ -71,15 +75,14 @@ $al->Connect();
 //echo "[ii] Dupline Input Address A2 is {$table['A2']}\n\n";
 
 // Set Dupline Adress A1 to 1
-//$table = $al->Dupline_SetSingleOutputBit("A1","0001");
+//$al->Dupline_SetSingleOutputBit("A1","0001");
 		
 // Simulate (buttonpress) on A1 (100msec seems like the fastest possible toggle)
-//$table = $al->ToggleDuplineOutputChannel("A4",200);
+//$al->ToggleDuplineOutputChannel("A1",200);
 
 // Get RegisterAddress offset for Dupline Address i3:
 //$v = $al->GetRegisterAddressOffsetByDuplineAddress("i3");
 //echo "[ii] Dupline  Address I3 has register address offset '{$v}'\n\n";
-
 
 // Dupline (Analink) heating level (normal) by function_id from a BEW-TEMDIS based temperature control unit
 //$t = $al->SetHeatingPointByFunctionId_BEWTEMDIS(11, 21.0);
@@ -132,5 +135,7 @@ $t = $al->GetTermostatNormal(11,true);
 
 */
 
+// Done, formatting
+if(php_sapi_name() != 'cli') echo "</pre>";
 
 ?>
