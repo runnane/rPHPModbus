@@ -196,7 +196,7 @@ class rPHPDupline extends rPHPModbus {
 	public function SetHeatingPointByFunctionId_BEWTEMDIS($function_id, $temperature, $energysaving = 0){
 		$temperature = str_pad(dechex(intval($temperature*10)), 8, "0", STR_PAD_LEFT);
 		$es = $energysaving ? "01" : "00";
-		$hexresult = $this->DuplineByFunction_PresetMultipleRegisters($function_id, 4, $es, "00", $temperature);
+		$this->DuplineByFunction_PresetMultipleRegisters($function_id, 4, $es, "00", $temperature);
 		return true;
 	}
 
