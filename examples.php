@@ -18,7 +18,7 @@ require_once("rPHPDupline.class.php");
 $al = new rPHPDupline("172.20.100.4");
 
 // Enable debugging
-$al->Debug(TRUE);
+$al->Debug(FALSE);
 
 // Connect
 $al->Connect();
@@ -74,7 +74,7 @@ $al->Connect();
 //echo "[ii] Dupline Input Address A2 is {$table['A2']}\n\n";
 
 // Set Dupline Adress A1 to 1
-//$al->DuplineByChannel_SetSingleOutputBit("A1","0001");
+//$al->DuplineByChannel_SetSingleOutputBit("A1",true);
 		
 // Simulate (buttonpress) on A1 (100msec seems like the fastest possible toggle)
 //$al->ToggleDuplineOutputChannel("A1",200);
@@ -103,11 +103,47 @@ $al->Connect();
 //$output_enabled = $al->DuplineByChannel_GetOutputStatus("A5");
 //echo "Dupline Output Channel A5 is " . ($output_enabled ? "HIGH" : "LOW" ). "\n";
 
-$input_enabled = $al->DuplineByChannel_GetInputStatus("A1");
-echo "Dupline input Channel A1 is " . ($input_enabled ? "HIGH" : "LOW") . "\n";
+//$input_enabled = $al->DuplineByChannel_GetInputStatus("A1");
+//echo "Dupline input Channel A1 is " . ($input_enabled ? "HIGH" : "LOW") . "\n";
 
+//$data = $al->DuplineByChannel_GetAnalinkValue("N1");
+//echo "Analink value of channel N1 is hex='{$data}', dec='".hexdec($data)."'\n";
 
-
+$al->DuplineByChannel_SetSingleOutputBit("A1",false);
+/*
+$al->ToggleDuplineOutputChannel("A1",200);
+usleep(200*1000);
+$al->ToggleDuplineOutputChannel("A2",200);
+usleep(200*1000);
+$al->ToggleDuplineOutputChannel("A3",200);
+usleep(200*1000);
+$al->ToggleDuplineOutputChannel("A4",200);
+usleep(1000*1000);
+$al->ToggleDuplineOutputChannel("A1",200);
+usleep(200*1000);
+$al->ToggleDuplineOutputChannel("A2",200);
+usleep(200*1000);
+$al->ToggleDuplineOutputChannel("A3",200);
+usleep(200*1000);
+$al->ToggleDuplineOutputChannel("A4",200);
+usleep(1000*1000);
+$al->ToggleDuplineOutputChannel("A1",200);
+usleep(200*1000);
+$al->ToggleDuplineOutputChannel("A2",200);
+usleep(200*1000);
+$al->ToggleDuplineOutputChannel("A3",200);
+usleep(200*1000);
+$al->ToggleDuplineOutputChannel("A4",200);
+usleep(1000*1000);
+$al->ToggleDuplineOutputChannel("A1",200);
+usleep(200*1000);
+$al->ToggleDuplineOutputChannel("A2",200);
+usleep(200*1000);
+$al->ToggleDuplineOutputChannel("A3",200);
+usleep(200*1000);
+$al->ToggleDuplineOutputChannel("A4",200);
+usleep(1000*1000);
+*/
 
 $al->Disconnect();
 

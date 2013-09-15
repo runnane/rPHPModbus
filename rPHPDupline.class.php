@@ -150,15 +150,17 @@ class rPHPDupline extends rPHPModbus {
          * @param type $data
          * @return type
          */
-	public function DuplineByChannel_SetSingleOutputBit($dupline_channel_address, $data){
+	public function DuplineByChannel_SetSingleOutputBit($dupline_channel_address, $boolean){
 		$dupline_start_addr = 5376;	// From "Smart-House  Modbus Protocol.pdf", section 5.4
 		
 		$register_address = self::Convert10to16($dupline_start_addr + $this->GetRegisterAddressOffsetByDuplineAddress($dupline_channel_address), 2);
-
+                
+                $rdata =    self::Convert10to16($boolean?1:0);
+                
 		$addr_hi 	= substr($register_address,0,2);
 		$addr_lo 	= substr($register_address,2,2);
-		$points_hi 	= substr($data,0,2);
-		$points_lo 	= substr($data,2,2);
+		$points_hi 	= substr($rdata,0,2);
+		$points_lo 	= substr($rdata,2,2);
 		
 		$result         = $this->DoModbusFunction_05WriteSingleCoil(1, $addr_hi, $addr_lo, $points_hi, $points_lo);
 		$data           = implode("",$result['frame']['register']);
@@ -207,6 +209,19 @@ class rPHPDupline extends rPHPModbus {
 		return $data=="01";
         }
    
+        
+       public function DuplineByChannel_GetAnalinkValue($dupline_channel_address){
+   		$dupline_start_addr = 256;	// From "Smart-House  Modbus Protocol.pdf", section 5.1
+  		$register_address = self::Convert10to16($dupline_start_addr + $this->GetRegisterAddressOffsetByDuplineAddress($dupline_channel_address), 2);
+
+                $addr_hi 	= substr($register_address,0,2);
+		$addr_lo 	= substr($register_address,2,2);
+	
+                
+                $packet = $this->DoModbusFunction_03ReadHoldingRegisters(1, $addr_hi, $addr_lo, "00", "01");
+		$data           = implode("",$packet['frame']['register']);
+                return $data;
+       }
 
         /****************************************************************/
         /****** Specific functions for Dupline units/functions **********/
@@ -303,9 +318,9 @@ class rPHPDupline extends rPHPModbus {
 			throw new Exception("Missing dupline address");
 		}
 		// Toggle 
-		$this->Dupline_SetSingleOutputBit($dupline_address, "0001");
+		$this->DuplineByChannel_SetSingleOutputBit($dupline_address, true);
 		usleep($msecdelay * 1000);	// wait $msecdelay msec
-		$this->Dupline_SetSingleOutputBit($dupline_address, "0000");
+		$this->DuplineByChannel_SetSingleOutputBit($dupline_address, false);
 		return true;
 	}
 	
