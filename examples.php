@@ -1,12 +1,11 @@
 <?php
 /*
-	examples.php - PHP classes for communicating with Modbus TCP controllers
-	This file is part of rPHPModbus.
-	Please see rPHPModbus.class.php for more info.
-	
-	This file shows function which can be used for general modbus buses, and 
-	additionally Carlo Gavazzi Smart-House solutions (Dupline). 
-	
+    examples.php - PHP classes for communicating with Modbus TCP controllers
+    This file is part of rPHPModbus.
+    Please see rPHPModbus.class.php for more info.
+
+    This file shows function which can be used for general modbus buses, and 
+    additionally Carlo Gavazzi Smart-House solutions (Dupline). 
 */
 
 // FOrmatting (<pre>)
@@ -18,7 +17,7 @@ require_once("rPHPDupline.class.php");
 $al = new rPHPDupline("172.20.100.4");
 
 // Enable debugging
-$al->Debug(FALSE);
+$al->Debug(TRUE);
 
 // Connect
 $al->Connect();
@@ -109,41 +108,16 @@ $al->Connect();
 //$data = $al->DuplineByChannel_GetAnalinkValue("N1");
 //echo "Analink value of channel N1 is hex='{$data}', dec='".hexdec($data)."'\n";
 
-$al->DuplineByChannel_SetSingleOutputBit("A1",false);
-/*
-$al->ToggleDuplineOutputChannel("A1",200);
-usleep(200*1000);
-$al->ToggleDuplineOutputChannel("A2",200);
-usleep(200*1000);
-$al->ToggleDuplineOutputChannel("A3",200);
-usleep(200*1000);
-$al->ToggleDuplineOutputChannel("A4",200);
-usleep(1000*1000);
-$al->ToggleDuplineOutputChannel("A1",200);
-usleep(200*1000);
-$al->ToggleDuplineOutputChannel("A2",200);
-usleep(200*1000);
-$al->ToggleDuplineOutputChannel("A3",200);
-usleep(200*1000);
-$al->ToggleDuplineOutputChannel("A4",200);
-usleep(1000*1000);
-$al->ToggleDuplineOutputChannel("A1",200);
-usleep(200*1000);
-$al->ToggleDuplineOutputChannel("A2",200);
-usleep(200*1000);
-$al->ToggleDuplineOutputChannel("A3",200);
-usleep(200*1000);
-$al->ToggleDuplineOutputChannel("A4",200);
-usleep(1000*1000);
-$al->ToggleDuplineOutputChannel("A1",200);
-usleep(200*1000);
-$al->ToggleDuplineOutputChannel("A2",200);
-usleep(200*1000);
-$al->ToggleDuplineOutputChannel("A3",200);
-usleep(200*1000);
-$al->ToggleDuplineOutputChannel("A4",200);
-usleep(1000*1000);
-*/
+//$al->DuplineByChannel_SetSingleOutputBit("A1",false);
+
+// Toggle LED fuction
+//$al->ToggleDuplineFunctionOutput(55);
+//
+// Dupline (Analink) heating level (normal) by function_id from a BEW-TEMDIS based temperature control unit
+//$al->SetHeatingPointByFunctionId_BEWTEMDIS(61, 21.0);
+//$al->SetHeatingPointByFunctionId_BEWTEMDIS(61, 20.5, true);
+
+
 
 $al->Disconnect();
 

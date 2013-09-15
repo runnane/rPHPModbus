@@ -119,7 +119,8 @@ class rPHPDupline extends rPHPModbus {
 	public function DuplineByFunction_PresetMultipleRegisters($function_id, $param_number, $param_index, $register_value){
 		$function_id 	= self::Convert10to16($function_id, 2);
 		$values[]  = $function_id;
-	
+                $data_bytes = strlen($register_value)/2;
+                
 		// byte 1+2
 		$register_address = "FF00";
 		
@@ -131,12 +132,15 @@ class rPHPDupline extends rPHPModbus {
 		if($param_index !== NULL){
 			$param_index = str_pad(dechex($param_index), 2, "0", STR_PAD_LEFT);
 			$values[]  = $param_index;
-		}
+                        
+		}else{
+                    $data_bytes += 1; // hack, bad implemented modbus :(
+                }
 			
 		$packet = implode("",$values) . $register_value;
-		//echo "[Packet] register_address=[{$register_address}] function_id=[{$function_id}] param_number=[{$param_number}] param_index=[{$param_index}] register_value=[{$register_value}]\n";
-		//echo "         packet=[{$packet}]\n";
-		return $this->DoModbusFunction_16WriteMultipleRegisters(1, $register_address, strlen($register_value)/2, $packet);
+		echo "[Packet] register_address=[{$register_address}] function_id=[{$function_id}] param_number=[{$param_number}] param_index=[{$param_index}] register_value=[{$register_value}]\n";
+		echo "         data_bytes=[{$data_bytes}] packet=[{$packet}]\n";
+		return $this->DoModbusFunction_16WriteMultipleRegisters(1, $register_address, $data_bytes, $packet);
 	}
         
         /****************************************************************/
@@ -209,8 +213,12 @@ class rPHPDupline extends rPHPModbus {
 		return $data=="01";
         }
    
-        
-       public function DuplineByChannel_GetAnalinkValue($dupline_channel_address){
+        /**
+         * 
+         * @param type $dupline_channel_address
+         * @return type
+         */
+        public function DuplineByChannel_GetAnalinkValue($dupline_channel_address){
    		$dupline_start_addr = 256;	// From "Smart-House  Modbus Protocol.pdf", section 5.1
   		$register_address = self::Convert10to16($dupline_start_addr + $this->GetRegisterAddressOffsetByDuplineAddress($dupline_channel_address), 2);
 
@@ -294,7 +302,7 @@ class rPHPDupline extends rPHPModbus {
          */
 	public function ReadFullDuplineOutputStatusTable(){
 		$packet = $this->DoModbusFunction_03ReadHoldingRegisters(1,"00","00","00","08");
-		return $this->ParseFullDuplineTable($packet);
+		return $this->_ParseFullDuplineTable($packet);
 	}
 
 	/**
@@ -303,7 +311,7 @@ class rPHPDupline extends rPHPModbus {
          */
 	public function ReadFullDuplineInputStatusTable(){
 		$packet = $this->DoModbusFunction_03ReadHoldingRegisters(1,"00","10","00","08");
-		return $this->ParseFullDuplineTable($packet);
+		return $this->_ParseFullDuplineTable($packet);
 	}
 	
 	/**
@@ -314,22 +322,32 @@ class rPHPDupline extends rPHPModbus {
          * @throws Exception
          */
 	public function ToggleDuplineOutputChannel($dupline_address, $msecdelay=500){
-		if(!$dupline_address){
-			throw new Exception("Missing dupline address");
-		}
-		// Toggle 
-		$this->DuplineByChannel_SetSingleOutputBit($dupline_address, true);
-		usleep($msecdelay * 1000);	// wait $msecdelay msec
-		$this->DuplineByChannel_SetSingleOutputBit($dupline_address, false);
-		return true;
+            if(!$dupline_address){
+                throw new Exception("Missing dupline address");
+            }
+            $this->DuplineByChannel_SetSingleOutputBit($dupline_address, true);
+            usleep($msecdelay * 1000);	// wait $msecdelay msec
+            $this->DuplineByChannel_SetSingleOutputBit($dupline_address, false);
+            return true;
 	}
+        
+        public function ToggleDuplineFunctionOutput($function_id, $msecdelay=500){
+            if(!$function_id){
+                throw new Exception("Missing functionId");
+            }
+
+            $this->DuplineByFunction_PresetMultipleRegisters($function_id, "00", NULL, "01");
+            usleep($msecdelay * 1000); // wait  $msecdelay msec
+            $this->DuplineByFunction_PresetMultipleRegisters($function_id, "00", NULL, "00");
+            return true;
+        }
 	
 	/**
          * 
          * @param type $packet
          * @return type
          */
-	private function ParseFullDuplineTable($packet){
+	private function _ParseFullDuplineTable($packet){
 		$binstr = self::GetBitFromHex(implode("",$packet['frame']['register']));
 		$i=0;
 		for($grp = 65; $grp <= 80; $grp += 2){
@@ -361,16 +379,7 @@ class rPHPDupline extends rPHPModbus {
 	
 	
 	/*
-	public function DoButtonPress($function_id, $waittime=0.5){
-		if(!$function_id){
-			throw new Exception("Missing functionId");
-		}
-		// Toggle 
-		$hexresult = $this->DuplineByFunction_PresetMultipleRegisters($function_id, 65280, 0x2, 0x0, NULL, 0x1);
-		usleep($waittime * 1000 * 100); // wait 500msec
-		$hexresult = $this->DuplineByFunction_PresetMultipleRegisters($function_id, 65280, 0x2, 0x0, NULL, 0x0);
-		return true;
-	}
+	
 	
 	
 	public function SetFunctionBit($Sensor_Index, $parm1, $parm2, $value){
