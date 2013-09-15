@@ -27,8 +27,14 @@ Todo/Known bugs:
 * phpDoc
 * Check compability with other archs/os-es
 
-References/more reading:
+References Modbus:
 -----------
 * http://en.wikipedia.org/wiki/Modbus
 * http://modbus.org/docs/Modbus_Application_Protocol_V1_1b3.pdf
 * http://modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf
+
+References Dupline:
+-----------
+* http://www.smartbuilding.no/assets/po_sh_ver-1-33_0112.pdf (Norwegian)
+* http://www.smart-house.it/download/smart-house-datasheet.zip
+* http://www.smart-house.it/download/Manual%20Hlp_ENG.pdf
