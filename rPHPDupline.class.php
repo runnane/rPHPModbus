@@ -43,16 +43,16 @@ class rPHPDupline extends rPHPModbus {
          * @return type
          */
 	public function DuplineByFunction_ReadOutputStatus($function_id, $param_number, $param_index){
-		$param				= "{$param_number}{$param_index}";
+		$param		= "{$param_number}{$param_index}";
 		$function_id	= self::Convert10to16($function_id, 2);
 		
-		$addr_hi		= "ff";
-		$addr_lo		= substr($function_id,0,2);
+		$addr_hi	= "ff";
+		$addr_lo	= substr($function_id,0,2);
 		$points_hi	= substr($function_id,2,2);
 		$points_lo	= $param;
 	
-		$result			= $this->DoModbusFunction_01ReadCoilStatus(1, $addr_hi, $addr_lo, $points_hi, $points_lo);
-		$data				= implode("",$result['frame']['register']);
+		$result		= $this->DoModbusFunction_01ReadCoilStatus(1, $addr_hi, $addr_lo, $points_hi, $points_lo);
+		$data		= implode("",$result['frame']['register']);
 		return $data;
 	}
 	
@@ -64,15 +64,16 @@ class rPHPDupline extends rPHPModbus {
          * @return type
          */
 	public function DuplineByFunction_ReadValue($function_id, $param_number, $param_index){
-		$param 				= "{$param_number}{$param_index}";
+		$param 		= "{$param_number}{$param_index}";
 		$function_id 	= self::Convert10to16($function_id, 2);
 		
-		$addr_hi 		= "ff";
-		$addr_lo 		= substr($function_id,0,2);
+		$addr_hi 	= "ff";
+		$addr_lo 	= substr($function_id,0,2);
 		$points_hi 	= substr($function_id,2,2);
 		$points_lo 	= $param;
-		$result = $this->DoModbusFunction_02ReadInputStatus(1, $addr_hi, $addr_lo, $points_hi, $points_lo);
-		$data = implode("",$result['frame']['register']);
+                
+		$result         = $this->DoModbusFunction_02ReadInputStatus(1, $addr_hi, $addr_lo, $points_hi, $points_lo);
+		$data           = implode("",$result['frame']['register']);
 		return $data;
 	}
 	
@@ -84,16 +85,16 @@ class rPHPDupline extends rPHPModbus {
          * @return type
          */
 	public function DuplineByFunction_ReadMultipleRegisters($function_id, $param_number, $param_index){
-		$param 				= "{$param_number}{$param_index}";
+		$param 		= "{$param_number}{$param_index}";
 		$function_id 	= self::Convert10to16($function_id, 2);
 		
-		$addr_hi 		= "ff";
-		$addr_lo 		= substr($function_id,0,2);
+		$addr_hi 	= "ff";
+		$addr_lo 	= substr($function_id,0,2);
 		$points_hi 	= substr($function_id,2,2);
 		$points_lo 	= $param;
 		
-		$result = $this->DoModbusFunction_03ReadHoldingRegisters(1, $addr_hi, $addr_lo, $points_hi, $points_lo);
-		$data = implode("",$result['frame']['register']);
+		$result         = $this->DoModbusFunction_03ReadHoldingRegisters(1, $addr_hi, $addr_lo, $points_hi, $points_lo);
+		$data           = implode("",$result['frame']['register']);
 		return $data;
 	}
 	
@@ -107,15 +108,15 @@ class rPHPDupline extends rPHPModbus {
 		$dupline_start_addr = 5376;	// From "Smart-House  Modbus Protocol.pdf", section 5.4
 		
 		$register_address = $dupline_start_addr + $this->GetRegisterAddressOffsetByDuplineAddress($duplineaddr);
-		$register_address 	= self::Convert10to16($register_address, 2);
+		$register_address = self::Convert10to16($register_address, 2);
 
-		$addr_hi 		= substr($register_address,0,2);
-		$addr_lo 		= substr($register_address,2,2);
+		$addr_hi 	= substr($register_address,0,2);
+		$addr_lo 	= substr($register_address,2,2);
 		$points_hi 	= substr($data,0,2);
 		$points_lo 	= substr($data,2,2);
 		
-		$result = $this->DoModbusFunction_05WriteSingleCoil(1, $addr_hi, $addr_lo, $points_hi, $points_lo);
-		$data = implode("",$result['frame']['register']);
+		$result         = $this->DoModbusFunction_05WriteSingleCoil(1, $addr_hi, $addr_lo, $points_hi, $points_lo);
+		$data           = implode("",$result['frame']['register']);
 		return $result;
 	}
 	
@@ -164,10 +165,10 @@ class rPHPDupline extends rPHPModbus {
 		}
 		
 		$result = $this->DuplineByFunction_ReadValue($function_id, 0, 0);
-		$value = hexdec($result);
-		if($value>1) $value -= 1.0;
-		$value = number_format(($value*50)/255,1);
-		return $value;
+		$dvalue = hexdec($result);
+                
+		if($dvalue>1) $dvalue -= 1.0;
+		return number_format(($dvalue*50)/255,1);
 	}
 	
 	/**
@@ -259,7 +260,6 @@ class rPHPDupline extends rPHPModbus {
 		$binstr = self::GetBitFromHex(implode("",$packet['frame']['register']));
 		$i=0;
 		for($grp = 65; $grp <= 80; $grp += 2){
-
 			for($chan = 8; $chan > 0; $chan--){
 				$output[chr($grp+1) . $chan] =  $binstr{$i};
 				$i++;
@@ -308,6 +308,4 @@ class rPHPDupline extends rPHPModbus {
 	*/
 
 }
-
-
 ?>

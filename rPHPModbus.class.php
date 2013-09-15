@@ -379,12 +379,12 @@ class rPHPModbus {
 		$frame = substr($p,12);
 		
 		if($this->_debug) echo "[ii] Got packet: header=[{$header}] frame=[{$frame}]\n";
-		$packet['header']['trid'] 						= substr($header,0,4);
-		$packet['header']['protoid'] 					= substr($header,4,4);
+		$packet['header']['trid'] 		= substr($header,0,4);
+		$packet['header']['protoid'] 		= substr($header,4,4);
 		$packet['header']['remaining_bytes'] 	= substr($header,8,4);
 		
-		$packet['frame']['unit'] 							= substr($frame,0,2);
-		$packet['frame']['function_code'] 		= substr($frame,2,2);
+		$packet['frame']['unit'] 		= substr($frame,0,2);
+		$packet['frame']['function_code'] 	= substr($frame,2,2);
 		
 		$modbus_function_code = hexdec($packet['frame']['function_code']);
 	
@@ -398,32 +398,32 @@ class rPHPModbus {
 			
 			case 1:  // 01 Read Coil Status
 				$packet['frame']['byte_count'] 	= substr($frame, 4, 2);
-				$to_parse 											= substr($frame, 6);
-				$register_size 									= 2;
+				$to_parse 			= substr($frame, 6);
+				$register_size 			= 2;
 			break;
 			
 			case 2:  // 02 Read Input Status
 				$packet['frame']['byte_count'] 	= substr($frame, 4, 2);
-				$to_parse 											= substr($frame, 6);
-				$register_size 									= 2;
+				$to_parse 			= substr($frame, 6);
+				$register_size 			= 2;
 			break;
 			
 			case 3: // 03 Read Holding Registers
 				$packet['frame']['byte_count'] 	= substr($frame, 4, 2);
-				$to_parse 											= substr($frame, 6);
-				$register_size 									= 4;
+				$to_parse 			= substr($frame, 6);
+				$register_size 			= 4;
 			break;
 			
 			case 5:  // 05 Write Single Coil
 				$packet['frame']['byte_count'] 	= 0;
-				$to_parse 											= substr($frame, 4);
-				$register_size 									= 2;
+				$to_parse 			= substr($frame, 4);
+				$register_size 			= 2;
 			break;
 
 			case 16:  // 16 Write Multiple Registers
 				$packet['frame']['byte_count'] 	= 0;
-				$to_parse 											= substr($frame, 4);
-				$register_size 									= 4;
+				$to_parse 			= substr($frame, 4);
+				$register_size 			= 4;
 			break;
 			
 			default:
