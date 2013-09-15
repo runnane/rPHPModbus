@@ -27,6 +27,7 @@ use rPHPModbus;
 class rPHPDupline extends rPHPModbus {
 	
 	/**
+         * Create new object
          * 
          * @param type $host
          * @param type $port
@@ -36,6 +37,7 @@ class rPHPDupline extends rPHPModbus {
 	} 
 
 	/**
+         *  Get output status of a Dupline function, wrapper for 01 Read Coil Status modbus function 
          * 
          * @param type $function_id
          * @param type $param_number
@@ -57,6 +59,7 @@ class rPHPDupline extends rPHPModbus {
 	}
 	
 	/**
+         * Get value of a Dupline function, wrapper for 02 Read Input Status modbus function 
          * 
          * @param type $function_id
          * @param type $param_number
@@ -78,6 +81,7 @@ class rPHPDupline extends rPHPModbus {
 	}
 	
 	/**
+         * Get value of a Dupline function, wrapper for 03 Read Holding Registers modbus function 
          * 
          * @param type $function_id
          * @param type $param_number
@@ -99,6 +103,7 @@ class rPHPDupline extends rPHPModbus {
 	}
 	
 	/**
+         * Set bitvalue of a Dupline channel, wrapper for 05 Write Single Coil
          * 
          * @param type $duplineaddr
          * @param type $data
@@ -107,8 +112,7 @@ class rPHPDupline extends rPHPModbus {
 	public function Dupline_SetSingleOutputBit($duplineaddr, $data){
 		$dupline_start_addr = 5376;	// From "Smart-House  Modbus Protocol.pdf", section 5.4
 		
-		$register_address = $dupline_start_addr + $this->GetRegisterAddressOffsetByDuplineAddress($duplineaddr);
-		$register_address = self::Convert10to16($register_address, 2);
+		$register_address = self::Convert10to16($dupline_start_addr + $this->GetRegisterAddressOffsetByDuplineAddress($duplineaddr), 2);
 
 		$addr_hi 	= substr($register_address,0,2);
 		$addr_lo 	= substr($register_address,2,2);
@@ -121,6 +125,7 @@ class rPHPDupline extends rPHPModbus {
 	}
 	
         /**
+         * Set value of a Dupline function, wrapper for 16 Write Multiple Registers modbus function 
          * 
          * @param type $function_id
          * @param type $number_of_registers
@@ -129,7 +134,7 @@ class rPHPDupline extends rPHPModbus {
          * @param type $register_value
          * @return type
          */
-	public function DuplineByFunction_PresetMultipleRegisters($function_id, $number_of_registers, $param_number, $param_index, $register_value){
+	public function DuplineByFunction_PresetMultipleRegisters($function_id, $param_number, $param_index, $register_value){
 		$function_id 	= self::Convert10to16($function_id, 2);
 		$values[]  = $function_id;
 	
@@ -152,6 +157,10 @@ class rPHPDupline extends rPHPModbus {
 		return $this->DoModbusFunction_16WriteMultipleRegisters(1, $register_address, strlen($register_value)/2, $packet);
 	}
 
+        /****************************************************************/
+        /****** Specific functions for Dupline units/functions **********/
+        /****************************************************************/
+        
 	/**
 	 * Get Dupline (Analink) temperature by function_id
 	 * Tested with BEW-TEMDIS (ELKO Temperature Controller)
@@ -196,10 +205,9 @@ class rPHPDupline extends rPHPModbus {
 	public function SetHeatingPointByFunctionId_BEWTEMDIS($function_id, $temperature, $energysaving = 0){
 		$temperature = str_pad(dechex(intval($temperature*10)), 8, "0", STR_PAD_LEFT);
 		$es = $energysaving ? "01" : "00";
-		$this->DuplineByFunction_PresetMultipleRegisters($function_id, 4, $es, "00", $temperature);
+		$this->DuplineByFunction_PresetMultipleRegisters($function_id, $es, "00", $temperature);
 		return true;
 	}
-
 	
 	/**
          * 
@@ -249,7 +257,6 @@ class rPHPDupline extends rPHPModbus {
 		$this->Dupline_SetSingleOutputBit($dupline_address, "0000");
 		return true;
 	}
-	
 	
 	/**
          * 
