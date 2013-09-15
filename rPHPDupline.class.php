@@ -186,6 +186,12 @@ class rPHPDupline extends rPHPModbus {
 		return $data=="01";
         }
         
+        /**
+         * Get bitvalue of a Dupline channel, wrapper for 02 Read Input Channel
+         * 
+         * @param type $dupline_channel_address
+         * @return type
+         */
         public function DuplineByChannel_GetInputStatus($dupline_channel_address){
  		$dupline_start_addr = 1536;	// From "Smart-House  Modbus Protocol.pdf", section 5.1
   		$register_address = self::Convert10to16($dupline_start_addr + $this->GetRegisterAddressOffsetByDuplineAddress($dupline_channel_address), 2);
