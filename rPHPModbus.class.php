@@ -81,8 +81,8 @@ class rPHPModbus {
 			if($this->_debug) echo "[--] rPHPModbus() cannot initialize, required sockets extension not loaded\n";
 			throw new Exception( "rPHPModbus() cannot initialize, required sockets extension not loaded" );
 		}
-		$this->_sec = 1;
-		$this->_usec = 500000;
+		$this->_sec = 0;
+		$this->_usec = 500*1000; // 500 msec
 	}
 	
 	/** 
@@ -114,9 +114,9 @@ class rPHPModbus {
 
 		// Set timeout
 		$timeout = array( 'sec' => $this->_sec, 'usec' => $this->_usec );
-		if(!socket_set_option($this->_socket, SOL_SOCKET, SO_SNDTIMEO, $timeout)){
-			if($this->_debug) echo "[--] Connect() failed, unable to set timeoutoption on socket\n";
-			throw new Exception( "Connect() failed, unable to set timeoutoption on socket" );
+		if(!socket_set_option($this->_socket, SOL_SOCKET, SO_RCVTIMEO, $timeout)){
+			if($this->_debug) echo "[--] Connect() failed, unable to set rcv timeoutoption on socket\n";
+			throw new Exception( "Connect() failed, unable to set rcv timeoutoption on socket" );
 		}
 		
 		// Connect socket
