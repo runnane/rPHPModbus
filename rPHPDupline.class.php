@@ -138,8 +138,8 @@ class rPHPDupline extends rPHPModbus {
                 }
 			
 		$packet = implode("",$values) . $register_value;
-		echo "[Packet] register_address=[{$register_address}] function_id=[{$function_id}] param_number=[{$param_number}] param_index=[{$param_index}] register_value=[{$register_value}]\n";
-		echo "         data_bytes=[{$data_bytes}] packet=[{$packet}]\n";
+		//echo "[Packet] register_address=[{$register_address}] function_id=[{$function_id}] param_number=[{$param_number}] param_index=[{$param_index}] register_value=[{$register_value}]\n";
+		//echo "         data_bytes=[{$data_bytes}] packet=[{$packet}]\n";
 		return $this->DoModbusFunction_16WriteMultipleRegisters(1, $register_address, $data_bytes, $packet);
 	}
         
@@ -225,7 +225,7 @@ class rPHPDupline extends rPHPModbus {
                 $addr_hi 	= substr($register_address,0,2);
 		$addr_lo 	= substr($register_address,2,2);
 	
-                
+                 
                 $packet = $this->DoModbusFunction_03ReadHoldingRegisters(1, $addr_hi, $addr_lo, "00", "01");
 		$data           = implode("",$packet['frame']['register']);
                 return $data;
