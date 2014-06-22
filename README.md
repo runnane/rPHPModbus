@@ -15,7 +15,7 @@ Tested on debian6 amd64 against Carlo Gavazzi Smart-House WinCE Based Controller
 
 Installation
 -----------
-Sync it with ``` git clone https://bitbucket.org/runnane/rphpmodbus.git rPHPModbus ```
+Sync it with ``` https://github.com/runnane/rPHPModbus.git rPHPModbus ```
 See examples.php for how to use it.
 
 
