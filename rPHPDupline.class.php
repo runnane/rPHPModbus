@@ -240,7 +240,7 @@ class rPHPDupline extends rPHPModbus {
 	 * Tested with BSI-TEMANA
 	 * 
 	 * @param int $function_id Decimal function number of the Temperature function
-	 * @return float The current temperature for the BEW-TEMDIS
+	 * @return float The current temperature for the BSI-TEMANA
 	 */
 	public function GetTemperatureByFunctionId_BSITEMANA($function_id){
 		if(!$function_id){
@@ -250,8 +250,8 @@ class rPHPDupline extends rPHPModbus {
 		$result = $this->DuplineByFunction_ReadValue($function_id, 0, 0);
 		$dvalue = hexdec($result);
                 
-		if($dvalue>2) $dvalue -= 2.0;
-		if($dvalue>1) $dvalue -= 1.0;
+		if($dvalue>=2) $dvalue -= 2.0;
+		else if($dvalue==1) $dvalue -= 1.0;
 		return number_format(($dvalue*0.3524)-29.997,1);
 	}
         
@@ -270,7 +270,7 @@ class rPHPDupline extends rPHPModbus {
 		$result = $this->DuplineByFunction_ReadValue($function_id, 0, 0);
 		$dvalue = hexdec($result);
                 
-		if($dvalue>1) $dvalue -= 1.0;
+		if($dvalue>=1) $dvalue -= 1.0;
 		return number_format(($dvalue*50)/255,1);
 	}
 	
