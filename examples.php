@@ -49,7 +49,7 @@ $al->Connect();
 
 
 //////////////////////////////////////////////////////////
-// Carlo Gavazzi Smart-House spesific examples: (Dupline/Analink)
+// Carlo Gavazzi Smart-House specific examples: (Dupline/Analink)
 //////////////////////////////////////////////////////////
 
 // Get the termostat heating level (normal) form a BEW-TEMDIS based temperature control unit function
@@ -84,16 +84,18 @@ $al->Connect();
 
 // Dupline (Analink) heating level (normal) by function_id from a BEW-TEMDIS based temperature control unit
 //$t = $al->SetHeatingPointByFunctionId_BEWTEMDIS(11, 21.0);
+//echo "[ii] Termostat normal in function 11 is {$t} C\n\n";
 
 // Dupline (Analink) heating level (power saving) by function_id from a BEW-TEMDIS based temperature control unit
 //$t = $al->SetHeatingPointByFunctionId_BEWTEMDIS(11, 20.5, true);
+//echo "[ii] Termostat normal in function 11 is {$t} C\n\n";
 
 // Get Dupline (Analink) temperature by function_id from a BEW-TEMDIS based temperature control unit
-//$temperature = $al->GetTermostatByFunctionId_BEWTEMDIS(11);
+//$temperature = $al->GetTermostatByFunctionId_BEWTEMDIS(9);
 //echo "[ii] Termostat normal in function 11 is {$temperature} C\n\n";
 
 // Get Dupline (Analink) temperature by function_id from a BEW-TEMDIS based temperature control unit
-//$temperature = $al->GetTermostatByFunctionId_BEWTEMDIS(11, true);
+//$temperature = $al->GetTermostatByFunctionId_BEWTEMDIS(9, true);
 //echo "[ii] Termostat powersave in function 11 is {$temperature} C\n\n";
 
 //$data = $al->DoModbusFunction_43ReadDeviceIdentification(1, "4","0");
@@ -112,6 +114,17 @@ $al->Connect();
 
 // Toggle LED function 55 (simulate button push to input)
 //$al->ToggleDuplineFunctionOutput(55);
+
+// Get temperature from BEW-TEMDIS thermostata module, this is done by function, ref section 6.2 in pdf "Smart-House  Modbus Protocol.pdf"
+//$func_num = 9;
+//$temp = $al->GetTemperatureByFunctionId_BEWTEMDIS($func_num);
+//echo "The temperature on function 9 is '{$temp}'\n";
+
+// Get temperature from BSI-TEMANA thermostata module, this is done by function, ref section 6.2 in pdf "Smart-House  Modbus Protocol.pdf"
+//$func_num = 9;
+//$temp = $al->GetTemperatureByFunctionId_BSITEMANA($func_num);
+//echo "The temperature on function 9 is '{$temp}'\n";
+
 
 $al->Disconnect();
 
