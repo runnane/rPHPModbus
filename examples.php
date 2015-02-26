@@ -1,23 +1,25 @@
 <?php
-/*
-    examples.php - PHP classes for communicating with Modbus TCP controllers
-    This file is part of rPHPModbus.
-    Please see rPHPModbus.class.php for more info.
 
-    This file shows function which can be used for general modbus buses, and 
-    additionally Carlo Gavazzi Smart-House solutions (Dupline). 
+/*
+examples.php - PHP classes for communicating with Modbus TCP controllers
+This file is part of rPHPModbus.
+Please see rPHPModbus.class.php for more info.
+
+This file shows function which can be used for general modbus buses, and 
+additionally Carlo Gavazzi Smart-House solutions (Dupline). 
 */
 
-// FOrmatting (<pre>)
-if(php_sapi_name() != 'cli') echo "<pre>";
+// Formatting (<pre>)
+if (php_sapi_name() != 'cli')
+    echo "<pre>";
 
 // We use the rPHPDupline class here since we want Dupline functions in addition
 // to "clean" Modbus functions.
-require_once("rPHPDupline.class.php");
+require_once ("rPHPDupline.class.php");
 $al = new rPHPDupline("172.20.100.4");
 
 // Enable debugging
-$al->Debug(TRUE);
+$al->Debug(true);
 
 // Connect
 $al->Connect();
@@ -64,22 +66,22 @@ $al->Connect();
 //$status = $al->GetBitValueByFunctionId(37);
 //echo "[ii] Function 37 has status {$status}\n\n";
 
-// Get Dupline Output Status for addresses A1-08
+// Get Dupline Output Status for channels A1-08
 //$table = $al->ReadFullDuplineOutputStatusTable();
 //echo "[ii] Dupline Output Address A5 is {$table['A5']}\n\n";
 
-// Get Dupline Input Status for addresses A1-08
+// Get Dupline Input Status for channels A1-08
 //$table = $al->ReadFullDuplineInputStatusTable();
 //echo "[ii] Dupline Input Address A2 is {$table['A2']}\n\n";
 
-// Set Dupline Adress A1 to 1
+// Set Dupline Channel A1 to 1
 //$al->DuplineByChannel_SetSingleOutputBit("A1",true);
-		
-// Simulate (buttonpress) on A1 (100msec seems like the fastest possible toggle)
+
+// Simulate (buttonpress) on Channel A1 (100msec seems like the fastest possible toggle)
 //$al->ToggleDuplineOutputChannel("A1",200);
 
-// Get RegisterAddress offset for Dupline Address i3:
-//$v = $al->GetRegisterAddressOffsetByDuplineAddress("i3");
+// Get RegisterAddress offset for Dupline Channel I3:
+//$v = $al->GetRegisterAddressOffsetByDuplineAddress("I3");
 //echo "[ii] Dupline  Address I3 has register address offset '{$v}'\n\n";
 
 // Dupline (Analink) heating level (normal) by function_id from a BEW-TEMDIS based temperature control unit
@@ -112,15 +114,15 @@ $al->Connect();
 
 //$al->DuplineByChannel_SetSingleOutputBit("A1",false);
 
-// Toggle LED function 55 (simulate button push to input)
+//Toggle LED function 55 (simulate button push to input)
 //$al->ToggleDuplineFunctionOutput(55);
 
-// Get temperature from BEW-TEMDIS thermostata module, this is done by function, ref section 6.2 in pdf "Smart-House  Modbus Protocol.pdf"
+// Get temperature from BEW-TEMDIS thermostat module, this is done by function, ref section 6.2 in pdf "Smart-House  Modbus Protocol.pdf"
 //$func_num = 9;
 //$temp = $al->GetTemperatureByFunctionId_BEWTEMDIS($func_num);
 //echo "The temperature on function {$func_num} is '{$temp}'\n";
 
-// Get temperature from BSI-TEMANA thermostata module, this is done by function, ref section 6.2 in pdf "Smart-House  Modbus Protocol.pdf"
+// Get temperature from BSI-TEMANA thermostat module, this is done by function, ref section 6.2 in pdf "Smart-House  Modbus Protocol.pdf"
 //$func_num = 9;
 //$temp = $al->GetTemperatureByFunctionId_BSITEMANA($func_num);
 //echo "The temperature on function {$func_num} is '{$temp}'\n";
@@ -129,6 +131,7 @@ $al->Connect();
 $al->Disconnect();
 
 // Done, formatting
-if(php_sapi_name() != 'cli') echo "</pre>";
+if (php_sapi_name() != 'cli')
+    echo "</pre>";
 
 ?>
