@@ -118,12 +118,12 @@ $al->Connect();
 // Get temperature from BEW-TEMDIS thermostata module, this is done by function, ref section 6.2 in pdf "Smart-House  Modbus Protocol.pdf"
 //$func_num = 9;
 //$temp = $al->GetTemperatureByFunctionId_BEWTEMDIS($func_num);
-//echo "The temperature on function 9 is '{$temp}'\n";
+//echo "The temperature on function {$func_num} is '{$temp}'\n";
 
 // Get temperature from BSI-TEMANA thermostata module, this is done by function, ref section 6.2 in pdf "Smart-House  Modbus Protocol.pdf"
 //$func_num = 9;
 //$temp = $al->GetTemperatureByFunctionId_BSITEMANA($func_num);
-//echo "The temperature on function 9 is '{$temp}'\n";
+//echo "The temperature on function {$func_num} is '{$temp}'\n";
 
 
 $al->Disconnect();
