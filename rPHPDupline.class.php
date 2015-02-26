@@ -271,6 +271,7 @@ class rPHPDupline extends rPHPModbus {
 		$dvalue = hexdec($result);
                 
 		if($dvalue>=1) $dvalue -= 1.0;
+        if($dvalue==0) return 0.0;
 		return number_format(($dvalue*50)/255,1);
 	}
 	
